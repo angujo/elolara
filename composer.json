@@ -1,0 +1,23 @@
+{
+  "name": "angujo/laravelmodel",
+  "description": "An all round Laravel model generator",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Barrack Angujo",
+      "email": "angujomondi@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Angujo\\LaravelModel\\": "src/"
+    }
+  },
+  "require-dev": {
+  }
+}
