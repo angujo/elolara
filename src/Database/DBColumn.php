@@ -25,6 +25,7 @@ use Angujo\LaravelModel\Util;
  * @property string  $default
  * @property boolean $is_nullable
  * @property boolean $is_primary
+ * @property boolean $is_multi_primary
  * @property boolean $is_generated
  * @property string  $type
  * @property string  $character_length
@@ -35,7 +36,7 @@ use Angujo\LaravelModel\Util;
  */
 class DBColumn extends BaseDBClass
 {
-    /** @var DatabaseSchema  */
+    /** @var DatabaseSchema */
     protected $db;
 
     public function __construct(DatabaseSchema $schema, $values = [])
@@ -51,7 +52,12 @@ class DBColumn extends BaseDBClass
 
     protected function is_primary()
     {
-        return !$this->is_nullable && 0 === stripos($this->column_key, 'pri');
+        return !$this->is_nullable && 0 === stripos($this->column_key, 'pri') && !empty($this->db->getPrimaryConstraint($this->table_name, null, $this->name));
+    }
+
+    protected function is_multi_primary()
+    {
+        return 1 < count($this->db->getPrimaryConstraint($this->table_name, null, $this->name));
     }
 
     protected function is_generated()
@@ -61,7 +67,6 @@ class DBColumn extends BaseDBClass
 
     protected function table()
     {
-        if (isset($this->_props['table']))return $this->_props['table'];
-        return $this->_props['table'];
+        return $this->db->getTable($this->table_name);
     }
 }

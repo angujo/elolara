@@ -20,6 +20,7 @@ use Angujo\LaravelModel\Database\Traits\HasName;
  *
  * @property string $name
  * @property string $comment
+ * @property DBColumn[]|array $columns
  */
 class DBTable extends BaseDBClass
 {
@@ -30,5 +31,13 @@ class DBTable extends BaseDBClass
     {
         $this->db = $database;
         parent::__construct($values);
+    }
+
+    /**
+     * @return DBColumn[]|array
+     */
+    protected function columns()
+    {
+        return $this->db->getColumn($this->name);
     }
 }

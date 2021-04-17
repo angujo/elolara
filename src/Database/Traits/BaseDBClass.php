@@ -23,11 +23,12 @@ abstract class BaseDBClass
         if (is_object($values)) {
             $values = (array)$values;
         }
-        $this->_props = is_array($values) ? $values : [];
+        $this->_props = is_array($values) ? array_combine(array_map('strtolower', array_keys($values)), $values) : [];
     }
 
     public function __get($name)
     {
+        $name = strtolower($name);
         if (method_exists($this, $name)) {
             return $this->{$name}();
         }
