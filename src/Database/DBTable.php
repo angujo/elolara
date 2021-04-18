@@ -18,9 +18,10 @@ use Angujo\LaravelModel\Database\Traits\HasName;
  *
  * @package Angujo\LaravelModel\Database
  *
- * @property string $name
- * @property string $comment
+ * @property string           $name
+ * @property string           $comment
  * @property DBColumn[]|array $columns
+ * @property DBColumn[]|array $primary_columns
  */
 class DBTable extends BaseDBClass
 {
@@ -39,5 +40,10 @@ class DBTable extends BaseDBClass
     protected function columns()
     {
         return $this->db->getColumn($this->name);
+    }
+
+    protected function primary_columns()
+    {
+        return array_filter($this->columns, function(DBColumn $col){ return $col->is_primary; });
     }
 }

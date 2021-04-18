@@ -14,10 +14,23 @@
     "php": "^7.1"
   },
   "autoload": {
+    "files": [
+      "src/constants.php"
+    ],
     "psr-4": {
       "Angujo\\LaravelModel\\": "src/"
     }
   },
   "require-dev": {
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Angujo\\LaravelModel\\Laravel\\LaravelModelServiceProvider"
+      ],
+      "aliases": {
+        "LaravelModel": "Angujo\\LaravelModel\\Laravel\\Factory"
+      }
+    }
   }
 }

@@ -36,4 +36,10 @@ class Util
         }
         return $value;
     }
+
+    public static function className(string $name)
+    : string
+    {
+        return ucfirst(\Str::camel(\Str::singular($name)));
+    }
 }

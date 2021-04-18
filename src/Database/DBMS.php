@@ -23,7 +23,7 @@ class DBMS
     protected $schema;
     /** @var ConnectionInterface */
     protected $connection;
-    /** @var string  */
+    /** @var string */
     protected $driver;
 
     public function __construct(ConnectionInterface $connection)
@@ -31,6 +31,24 @@ class DBMS
         $this->connection = $connection;
         $this->schema     = new DatabaseSchema($connection->getDatabaseName());
         $this->driver     = config('database.connections.'.$this->connection->getName().'.driver');
+    }
+
+    /**
+     * @return DatabaseSchema
+     */
+    public function getSchema()
+    {
+        return $this->schema;
+    }
+
+    public function loadSchema()
+    {
+        $this->getTables();
+        $this->getUniqueConstraints();
+        $this->getForeignConstraints();
+        $this->getPrimaryConstraints();
+        $this->getColumns();
+        return $this->schema;
     }
 
     public function getTables()
