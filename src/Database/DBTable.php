@@ -22,6 +22,7 @@ use Angujo\LaravelModel\Database\Traits\HasName;
  * @property string           $comment
  * @property DBColumn[]|array $columns
  * @property DBColumn[]|array $primary_columns
+ * @property DBColumn|null $primary_column
  */
 class DBTable extends BaseDBClass
 {
@@ -45,5 +46,10 @@ class DBTable extends BaseDBClass
     protected function primary_columns()
     {
         return array_filter($this->columns, function(DBColumn $col){ return $col->is_primary; });
+    }
+
+    protected function primary_column()
+    {
+        return 1<count($this->primary_columns)?null:\Arr::first($this->primary_columns);
     }
 }

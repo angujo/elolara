@@ -15,6 +15,7 @@ namespace Angujo\LaravelModel;
  * @package Angujo\LaravelModel
  *
  * @method static boolean date_base($value = null)
+ * @method static boolean define_connection($value = null)
  * @method static boolean overwrite_models($value = null)
  * @method static boolean db_directories($value = null)
  * @method static string[]|array soft_delete_columns($value = null)
@@ -26,6 +27,7 @@ namespace Angujo\LaravelModel;
  * @method static string relation_remove_prx($value = null)
  * @method static string relation_remove_sfx($value = null)
  * @method static string model_class($value = null)
+ * @method static string date_format($value = null)
  * @method static string base_dir($value = null)
  * @method static boolean composite_keys($value = null)
  * @method static string eloquent_extension_name($value = null)
@@ -40,21 +42,31 @@ namespace Angujo\LaravelModel;
 class Config
 {
     private static $me;
-    public const CONFIG_NAME     = 'laravelmodel';
-    public const SCHEMAS_EXCLUDE = ['mysql', 'sys', 'information_schema', 'master', 'template'];
+    public const CONFIG_NAME        = 'laravelmodel';
+    public const SCHEMAS_EXCLUDE    = ['mysql', 'sys', 'information_schema', 'master', 'template'];
+    public const LARAVEL_CONSTANTS  = ['created_at', 'updated_at'];
+    public const LARAVEL_ID         = 'id';
+    public const LARAVEL_TS_CREATED = 'created_at';
+    public const LARAVEL_TS_UPDATED = 'updated_at';
+    public const LARAVEL_TS_DELETED = 'deleted_at';
     /** @var array|string[] */
     private $values = [];
 
     protected function __construct()
     {
-        $this->values = array_replace($this->defaults(), $this->user());
-        $this->values['overwrite_models']=false;
+        $this->values                     = array_replace($this->defaults(), $this->user());
+        $this->values['overwrite_models'] = false;
     }
 
     public static function __callStatic($method, $args)
     {
         self::$me = self::$me ?? new self();
         return !empty($args) ? call_user_func_array([self::$me, 'setProperty'], [$method, array_pop($args)]) : self::$me->getProperty($method);
+    }
+
+    public static function timestampColumnNames()
+    {
+        return array_merge([self::LARAVEL_TS_CREATED, self::LARAVEL_TS_UPDATED], self::create_columns(), self::update_columns());
     }
 
     /**

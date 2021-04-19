@@ -12,6 +12,7 @@ namespace Angujo\LaravelModel\Model;
 use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\DBTable;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
+use Angujo\LaravelModel\Model\Traits\ImportsClass;
 use Angujo\LaravelModel\Util;
 
 /**
@@ -21,24 +22,55 @@ use Angujo\LaravelModel\Util;
  */
 class Model
 {
-    use HasTemplate;
+    use HasTemplate, ImportsClass;
 
     protected $template_name = 'model';
 
-    public $_imports     = [];
-    public $_uses        = [];
-    public $_constraints = [];
-    public $_functions   = [];
+    public $_uses         = [];
+    public $_constants    = [];
+    public $_functions    = [];
+    public $_properties   = [];
+    public $_phpdoc_props = [];
     public $namespace;
     public $name;
     public $parent;
 
     public static function fromTable(DBTable $table)
     {
-        $me            = new self();
-        $me->name      = Util::className($table->name);
-        $me->parent    = Config::model_class();
+        $me         = new self();
+        $me->name   = Util::className($table->name);
+        $me->parent = basename(Config::model_class());
+        $me->addImport(Config::model_class());
         $me->namespace = Config::namespace();
+        $me->processTable($table);
         return $me;
+    }
+
+    protected function processTable(DBTable $table)
+    {
+        $columns = $table->columns;
+        foreach ($columns as $column) {
+            $this->_constants[]    = ModelConst::fromColumn($column, $this->_imports);
+            $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column, $this->_imports);
+        }
+        $this->_properties[] = ModelProperty::forTableName($table);
+        $this->_properties[] = ModelProperty::forPrimaryKey($table);
+        $this->_properties[] = ModelProperty::forIncrementing($table);
+        $this->_properties[] = ModelProperty::forKeyType($table);
+        $this->_properties[] = ModelProperty::forTimestamps($table);
+        $this->_properties[] = ModelProperty::forDateFormat();
+        [$cre, $upd] = ModelConst::forTimestamps($table);
+        $this->_constants[]  = $cre;
+        $this->_constants[]  = $upd;
+        $this->_properties[] = ModelProperty::forPrimaryKey($table);
+        $this->_properties[] = ModelProperty::forDates($table);
+        $this->_properties[] = ModelProperty::forAttributes($table);
+        $this->addImport(null);
+    }
+
+    public function setConnection(string $name)
+    {
+        $this->_properties[] = ModelProperty::forConnection($name);
+        return $this;
     }
 }

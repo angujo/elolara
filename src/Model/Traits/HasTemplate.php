@@ -26,15 +26,19 @@ trait HasTemplate
      */
     protected function processTemplate()
     {
-        if (!property_exists($this, 'template_name') || !file_exists($path = LM_TPL_DIR.$this->template_name)) {
+        if (!property_exists($this, 'template_name') || !file_exists($path = LM_TPL_DIR.$this->template_name.'.tpl')) {
             return '';
         }
         $content = file_get_contents($path);
         $vars    = get_object_vars($this);
         foreach ($vars as $var => $value) {
-            if (is_array($value)) {
-                $value = implode(preg_match('/^_/', $var) ? "\n" : '|', $value);
+            if (is_null($value)) {
+                continue;
             }
+            if (is_array($value)) {
+                $value = implode(preg_match('/^_/', $var) ? "\n" : '|', array_map(function($v){ return (string)$v; }, (array_filter($value))));
+            }
+            $value   = (string)$value;
             $var     = preg_replace('/^[_]+/', '', $var);
             $content = preg_replace('/\{(\s+)?'.$var.'(\s+)?\}/', $value, $content);
         }

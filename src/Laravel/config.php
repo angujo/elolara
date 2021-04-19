@@ -17,6 +17,14 @@ use Illuminate\Database\Eloquent\Model;
 
 return [
     /*
+     * Set the model connection defined
+     */
+    'define_connection'             => false,
+    /*
+     * Set the date format for DB, serialization in array or json
+     */
+    'date_format'             => null,
+    /*
      * Enable to add @date on each Base Model every time it is run
      * If set to False, @date will be set on first instance
      */
@@ -164,6 +172,7 @@ return [
      */
     'polymorph'               => true,
     /*
+     * @see https://laravel.com/docs/eloquent-mutators#attribute-casting
      * Type Casting for properties and database values.
      * You can cast using a column name or data type.
      * To cast data type e.g. tinyint(1) to be boolean,
@@ -177,7 +186,7 @@ return [
      * Need to be explicitly called on console to be implemented,
      * otherwise the value below is ignored
      */
-    'overwrite_models'=>false,
+    'overwrite_models'        => false,
     /*
      * If handling multiple schema/DBs and there's need to separate schema configurations,
      * Use below with options above to be replaced.

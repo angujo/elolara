@@ -9,6 +9,7 @@
 namespace Angujo\LaravelModel\Laravel;
 
 
+use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\DBMS;
 use Angujo\LaravelModel\Model\Model;
 use Illuminate\Database\ConnectionInterface;
@@ -20,7 +21,9 @@ use Illuminate\Database\ConnectionInterface;
  */
 class Factory
 {
+    /** @var ConnectionInterface */
     private $connection;
+    private $con_name;
 
     public function __construct()
     {
@@ -39,6 +42,7 @@ class Factory
         $config['database'] = $db_name;
         config()->set('database.connections.'.$conn_name, $config);
         \DB::purge($conn_name);
+        $this->con_name = $conn_name;
         return $this->connection = \DB::connection($conn_name);
     }
 
@@ -48,12 +52,12 @@ class Factory
         $schema = $dbms->loadSchema();
         $tables = $schema->tables;
         foreach ($tables as $table) {
-            $this->writeModel(Model::fromTable($table));
+            $this->writeModel(Model::fromTable($table)->setConnection($this->con_name));
         }
     }
 
     protected function writeModel(Model $model)
     {
-        file_put_contents($model->name.'.php', (string)$model);
+        file_put_contents(preg_replace(['/\\\$/', '/\/$/'], '', Config::base_dir()).DIRECTORY_SEPARATOR.$model->name.'.php', (string)$model);
     }
 }

@@ -2,4 +2,4 @@
 {description}
 {var}
 */
-{access} {name}{value};
+{access} ${name} = {value};
