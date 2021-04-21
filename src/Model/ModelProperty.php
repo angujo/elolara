@@ -151,13 +151,43 @@ class ModelProperty
         if (empty($columns)) {
             return null;
         }
-        $values          =array_values( array_map(function(DBColumn $col){ return $col->name; }, $columns));
+        $values          = array_values(array_map(function(DBColumn $col){ return $col->name; }, $columns));
         $me              = new self();
         $me->var         = '* @var array';
         $me->description = '* Attributes that should be muted to dates';
         $me->access      = 'protected';
         $me->name        = 'dates';
-        $me->value       = var_export($values, true);
+        $me->value       = array_export($values);
+        return $me;
+    }
+
+    public static function forCasts(DBTable $table, array &$imports = [])
+    {
+        $cols = array_filter(array_map(function(DBColumn $column) use (&$imports){
+            $casts = Config::type_casts();
+            foreach ($casts as $col_reg => $cast) {
+                if (0 === strcasecmp($col_reg, $column->name) ||
+                    preg_match('/^'.$col_reg.'$/', $column->name) ||
+                    0 === strcasecmp($col_reg, "type:{$column->type}") ||
+                    0 === strcasecmp($col_reg, "type:{$column->column_type}")) {
+                    if (is_array($cast)) {
+                        $imports[] = $cast[0];
+                        $cast      = $cast[1];
+                    }
+                    return [$column->name, $cast];
+                }
+            }
+            return null;
+        }, $table->columns));
+        if (empty($cols)) {
+            return null;
+        }
+        $me              = new self();
+        $me->var         = '* @var array';
+        $me->description = '* Attributes that should be cast';
+        $me->access      = 'protected';
+        $me->name        = 'casts';
+        $me->value       = array_export(array_combine(array_column($cols, 0), array_column($cols, 1)));
         return $me;
     }
 }

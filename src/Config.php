@@ -9,6 +9,12 @@
 namespace Angujo\LaravelModel;
 
 
+use Angujo\LaravelModel\Model\AttributeCast;
+use Illuminate\Contracts\Database\Eloquent\Castable;
+use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Casts\AsCollection;
+
 /**
  * Class Config
  *
@@ -54,7 +60,8 @@ class Config
 
     protected function __construct()
     {
-        $this->values                     = array_replace($this->defaults(), $this->user());
+        $this->values = array_replace($this->defaults(), $this->user());
+        $this->cleanCasts();
         $this->values['overwrite_models'] = false;
     }
 
@@ -80,6 +87,7 @@ class Config
         $schema = (self::$me = self::$me ?? new self())->values['schemas'][$schema_name] ?? [];
         unset(self::$me->values['schemas']);
         self::$me->values = array_replace(self::$me->values, $schema);
+        self::$me->cleanCasts();
         return self::$me;
     }
 
@@ -114,5 +122,44 @@ class Config
     private function user()
     {
         return config(self::CONFIG_NAME);
+    }
+
+    protected function cleanCasts()
+    : Config
+    {
+        $conversion = ['bool' => 'boolean'];
+        $c          = $this->values['type_casts'] ?? null;
+        $regex      = array_merge(AttributeCast::$laravel_primitives,
+                                  ['date(time)?:(Y|m|d|Y\-m|Y\-m\-d)',
+                                   'time:H:i(:s)?',
+                                   'datetime:((Y|m|d|Y\-m|Y\-m\-d)((\s+)H:i(:s)?)?)',//optional time
+                                   'datetime:((Y|m|d|Y\-m|Y\-m\-d)?((\s+)?H:i(:s)?))',//optional date
+                                  ]);
+        $n_casts    = [];
+        foreach ($c as $col => $validation) {
+            if (false !== stripos($col, '%')) {
+                $col = str_ireplace('%', '(.*?)', $col);
+            }
+            if (in_array($validation, $regex)) {
+                $n_casts[$col] = $validation;
+            } elseif (class_exists($validation)) {
+                $implements = [Castable::class, CastsAttributes::class];
+                if (empty(array_intersect($implements, class_implements($validation)))) {
+                    continue;
+                }
+                $n_casts[$col] = [$validation, basename($validation).'::class'];
+            } elseif (array_key_exists($validation, $conversion)) {
+                $n_casts[$col] = $conversion[$validation];
+            } else {
+                foreach ($regex as $_regex) {
+                    if (preg_match('/^'.$_regex.'$/', $validation)) {
+                        $n_casts[$col] = $validation;
+                        break;
+                    }
+                }
+            }
+        }
+        $this->values['type_casts'] = $n_casts;
+        return $this;
     }
 }

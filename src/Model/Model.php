@@ -65,6 +65,7 @@ class Model
         $this->_properties[] = ModelProperty::forPrimaryKey($table);
         $this->_properties[] = ModelProperty::forDates($table);
         $this->_properties[] = ModelProperty::forAttributes($table);
+        $this->_properties[] = ModelProperty::forCasts($table, $this->_imports);
         $this->addImport(null);
     }
 

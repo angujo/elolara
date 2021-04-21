@@ -15,7 +15,8 @@
   },
   "autoload": {
     "files": [
-      "src/constants.php"
+      "src/constants.php",
+      "src/helpers.php"
     ],
     "psr-4": {
       "Angujo\\LaravelModel\\": "src/"
