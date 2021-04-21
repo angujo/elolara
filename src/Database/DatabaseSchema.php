@@ -22,7 +22,6 @@ use Illuminate\Database\Query\JoinClause;
  * @property string                      $name
  * @property array|DBTable[]             $tables
  * @property array|DBColumn[]            $columns
- * @property array|DBForeignKey[]        $foreign_keys
  * @property array|DBPrimaryConstraint[] $primary_constraints
  * @property array|DBUniqueConstraint[]  $unique_constraints
  * @property array|DBForeignConstraint[] $foreign_constraints
@@ -64,7 +63,14 @@ class DatabaseSchema extends BaseDBClass
         return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
     }
 
-    public function getForeignKey(string $table_name, ?string $name = null, ?string $column_name = null)
+    /**
+     * @param string|null $table_name
+     * @param string|null $name
+     * @param string|null $column_name
+     *
+     * @return DBForeignConstraint|DBForeignConstraint[]|array|null
+     */
+    public function getForeignKey(string $table_name , ?string $name = null, ?string $column_name = null)
     {
         if (!$column_name && (!$name || !is_string($name))) {
             return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });

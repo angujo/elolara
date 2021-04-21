@@ -9,17 +9,18 @@
 namespace Angujo\LaravelModel;
 
 
-use Angujo\LaravelModel\Model\AttributeCast;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsCollection;
+use phpDocumentor\Reflection\Types\Boolean;
 
 /**
  * Class Config
  *
  * @package Angujo\LaravelModel
  *
+ * @method static boolean full_namespace_import(Boolean $value = null)
  * @method static boolean date_base($value = null)
  * @method static boolean define_connection($value = null)
  * @method static boolean overwrite_models($value = null)
@@ -48,13 +49,16 @@ use Illuminate\Database\Eloquent\Casts\AsCollection;
 class Config
 {
     private static $me;
-    public const CONFIG_NAME        = 'laravelmodel';
-    public const SCHEMAS_EXCLUDE    = ['mysql', 'sys', 'information_schema', 'master', 'template'];
-    public const LARAVEL_CONSTANTS  = ['created_at', 'updated_at'];
-    public const LARAVEL_ID         = 'id';
-    public const LARAVEL_TS_CREATED = 'created_at';
-    public const LARAVEL_TS_UPDATED = 'updated_at';
-    public const LARAVEL_TS_DELETED = 'deleted_at';
+    public const CONFIG_NAME         = 'laravelmodel';
+    public const SCHEMAS_EXCLUDE     = ['mysql', 'sys', 'information_schema', 'master', 'template'];
+    public const LARAVEL_CONSTANTS   = ['created_at', 'updated_at'];
+    public const LARAVEL_ID          = 'id';
+    public const LARAVEL_TS_CREATED  = 'created_at';
+    public const LARAVEL_TS_UPDATED  = 'updated_at';
+    public const LARAVEL_TS_DELETED  = 'deleted_at';
+    public const LARAVEL_PRIMARY_KEY = 'id';
+
+    public static $laravel_primitives = ['array', 'boolean', 'collection', 'date', 'datetime', 'decimal:(\d+)', 'double', 'encrypted', 'encrypted:array', 'encrypted:collection', 'encrypted:object', 'float', 'integer', 'object', 'real', 'string', 'timestamp',];
     /** @var array|string[] */
     private $values = [];
 
@@ -129,7 +133,7 @@ class Config
     {
         $conversion = ['bool' => 'boolean'];
         $c          = $this->values['type_casts'] ?? null;
-        $regex      = array_merge(AttributeCast::$laravel_primitives,
+        $regex      = array_merge(self::$laravel_primitives,
                                   ['date(time)?:(Y|m|d|Y\-m|Y\-m\-d)',
                                    'time:H:i(:s)?',
                                    'datetime:((Y|m|d|Y\-m|Y\-m\-d)((\s+)H:i(:s)?)?)',//optional time

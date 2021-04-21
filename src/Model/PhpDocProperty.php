@@ -41,4 +41,16 @@ class PhpDocProperty
         $imports = array_merge($imports, $me->imports());
         return $me;
     }
+
+    public static function fromRelationFunction(RelationshipFunction $relation)
+    {
+        $me               = new self();
+        $me->name         = $relation->name;
+        $me->description  = '';
+        $me->data_types[] = $relation->return_result;
+        if ($relation->is_nullable) {
+            $me->data_types[] = 'null';
+        }
+        return $me;
+    }
 }

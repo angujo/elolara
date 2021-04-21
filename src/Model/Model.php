@@ -66,6 +66,7 @@ class Model
         $this->_properties[] = ModelProperty::forDates($table);
         $this->_properties[] = ModelProperty::forAttributes($table);
         $this->_properties[] = ModelProperty::forCasts($table, $this->_imports);
+        $this->_functions    = array_merge($this->_functions, RelationshipFunction::oneToOne($table, $this->_phpdoc_props,$this->_imports));
         $this->addImport(null);
     }
 

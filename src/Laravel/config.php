@@ -19,7 +19,7 @@ return [
     /*
      * Set the model connection defined
      */
-    'define_connection'             => false,
+    'define_connection'       => false,
     /*
      * Set the date format for DB, serialization in array or json
      */
@@ -75,7 +75,7 @@ return [
      * The foreign key constrain name will be used.
      *
      * The checking and order preference is based on usage.
-     * E.g. for column manager_user_id referencing table users with constraint managers_user_id_foreign,
+     * E.g. for column [manager_user_id] referencing table [users] with constraint [managers_user_id_foreign],
      * will be processed by checking if relation [manager_user] has been created by another relation,
      * if used will check if [user] has been created,
      * if used will check if [managers_user_id_foreign] has been used.
@@ -86,28 +86,11 @@ return [
      * Column naming pattern to auto identify without the Foreign Keys
      * This will check column names and set relation based off them.
      * Percentage similarity will be set to 70%
-     * Set to empty or null so as not to use
+     * Set to empty or null so as not to use.
+     * E.g 1: if = [{relation_name}_id] or = [fk_{relation_name}] or = [fk_{relation_name}_id] when column name is user_manager_id then relation name will be userManager
+     * i.e. use {relation_name} to indicate which part of column to be used as relation name.
      */
-    'column_relation_pattern' => '{table_name}_id',
-    /*
-     * Prefix used to mark relationship column names
-     * Depends on naming conventions
-     * E.g. relationship column might be prefixed with "fk" e.g. fk_customer
-     * or suffixed with "id" e.g. customer_id
-     * or bother fk_customer_id
-     * This is essential for naming of relationship properties
-     * The naming is based on relation table name and column.
-     * E.g. for 1-1 relation the table name is used as in class
-     * for 1-N relation, the column name will be used
-     * Therefore, for column "fk_customer_id", relation will be "customer"
-     * It is recommended to have a prefix/suffix/both to separate the column value from the relation,
-     * otherwise, might break the models
-     */
-    'relation_remove_prx'     => 'fk',
-    /*
-     * @see doc for 'relation_remove_prx' above
-     */
-    'relation_remove_sfx'     => 'id',
+    'column_relation_pattern' => '{relation_name}_id',
     /*
      * Class to be used for each and every generated model
      * Ensure it is or extends \Illuminate\Database\Eloquent\Model::class
@@ -187,6 +170,10 @@ return [
      * otherwise the value below is ignored
      */
     'overwrite_models'        => false,
+    /*
+     * Fully import classes even on same namespace
+     */
+    'full_namespace_import'=>false,
     /*
      * If handling multiple schema/DBs and there's need to separate schema configurations,
      * Use below with options above to be replaced.
