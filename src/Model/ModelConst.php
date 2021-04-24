@@ -34,13 +34,13 @@ class ModelConst
 
     public static function fromColumn(DBColumn $column, array &$imports = [], ?string $name = null)
     {
-        if (in_array($column->name, Config::LARAVEL_CONSTANTS)) {
+        if (!Config::constant_column_names() || in_array($column->name, Config::LARAVEL_CONSTANTS)) {
             return null;
         }
         $me         = new self();
         $me->var    = "@var string Column name: {$column->name}, Data Type: ".$column->data_type->phpName()."({$column->column_type})";
         $me->access = 'public';
-        $me->name   = strtoupper(\Str::slug($name ?: $column->name, '_'));
+        $me->name   = strtoupper(\Str::slug(((string)Config::constant_column_prefix()).($name ?: $column->name), '_'));
         $me->value  = "'{$column->name}'";
         $me->addImport($column->data_type->imports());
         $imports = array_merge($imports, $me->imports());

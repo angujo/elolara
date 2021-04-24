@@ -9,6 +9,7 @@
 namespace Angujo\LaravelModel\Database;
 
 
+use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\Traits\BaseDBClass;
 use Angujo\LaravelModel\Database\Traits\HasComment;
 use Angujo\LaravelModel\Database\Traits\HasName;
@@ -19,6 +20,12 @@ use Angujo\LaravelModel\Database\Traits\HasName;
  * @package Angujo\LaravelModel\Database
  *
  * @property string                      $name
+ * @property string                      $foreign_column_name
+ * @property string                      $class_name
+ * @property string                      $relation_name_singular
+ * @property string                      $relation_name_plural
+ * @property string                      $fqdn
+ * @property string                      $class_name_key
  * @property string                      $comment
  * @property DBColumn[]|array            $columns
  * @property DBColumn[]|array            $primary_columns
@@ -35,6 +42,36 @@ class DBTable extends BaseDBClass
     {
         $this->db = $database;
         parent::__construct($values);
+    }
+
+    protected function relation_name_singular()
+    {
+        return function_name_single($this->name);
+    }
+
+    protected function relation_name_plural()
+    {
+        return function_name_plural($this->name);
+    }
+
+    protected function fqdn()
+    {
+        return Config::namespace().'\\'.class_name($this->name);
+    }
+
+    protected function class_name()
+    {
+        return class_name($this->name);
+    }
+
+    protected function class_name_key()
+    {
+        return $this->class_name.'::class';
+    }
+
+    protected function foreign_column_name()
+    {
+        return strtolower(\Str::singular(\Str::snake($this->name)).'_'.Config::LARAVEL_PRIMARY_KEY);
     }
 
     /**

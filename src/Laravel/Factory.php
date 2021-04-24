@@ -11,6 +11,7 @@ namespace Angujo\LaravelModel\Laravel;
 
 use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\DBMS;
+use Angujo\LaravelModel\Database\DBTable;
 use Angujo\LaravelModel\Model\Model;
 use Illuminate\Database\ConnectionInterface;
 
@@ -48,9 +49,11 @@ class Factory
 
     public function runSchema()
     {
-        $dbms   = new DBMS($this->connection);
-        $schema = $dbms->loadSchema();
-        $tables = $schema->tables;
+        $dbms         = new DBMS($this->connection);
+        $schema       = $dbms->loadSchema();
+        $tables       = $schema->tables;
+        $combinations = array_filter(array_combination(array_map(function(DBTable $t){ return $t->name; }, $tables)), function($tn){ return 2 === count($tn); });
+       // print_r($combinations);
         foreach ($tables as $table) {
             $this->writeModel(Model::fromTable($table)->setConnection($this->con_name));
         }

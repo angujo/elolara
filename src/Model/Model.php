@@ -10,7 +10,12 @@ namespace Angujo\LaravelModel\Model;
 
 
 use Angujo\LaravelModel\Config;
+use Angujo\LaravelModel\Database\DBColumn;
+use Angujo\LaravelModel\Database\DBForeignConstraint;
 use Angujo\LaravelModel\Database\DBTable;
+use Angujo\LaravelModel\Model\Relations\BelongsTo;
+use Angujo\LaravelModel\Model\Relations\HasMany;
+use Angujo\LaravelModel\Model\Relations\HasOne;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
 use Angujo\LaravelModel\Model\Traits\ImportsClass;
 use Angujo\LaravelModel\Util;
@@ -50,7 +55,9 @@ class Model
     {
         $columns = $table->columns;
         foreach ($columns as $column) {
-            $this->_constants[]    = ModelConst::fromColumn($column, $this->_imports);
+            if (Config::constant_column_names()) {
+                $this->_constants[] = ModelConst::fromColumn($column, $this->_imports);
+            }
             $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column, $this->_imports);
         }
         $this->_properties[] = ModelProperty::forTableName($table);
@@ -66,8 +73,49 @@ class Model
         $this->_properties[] = ModelProperty::forDates($table);
         $this->_properties[] = ModelProperty::forAttributes($table);
         $this->_properties[] = ModelProperty::forCasts($table, $this->_imports);
-        $this->_functions    = array_merge($this->_functions, RelationshipFunction::oneToOne($table, $this->_phpdoc_props,$this->_imports));
+
+        $this->hasOneRelation($table);
+        $this->belongsToRelation($table);
+        $this->hasManyRelation($table);
+
         $this->addImport(null);
+    }
+
+    protected function belongsToRelation(DBTable $table)
+    {
+        $foreignKeys = $table->foreign_keys;
+        foreach ($foreignKeys as $foreignKey) {
+            $this->_functions[] = $belong_to = BelongsTo::fromForeignKey($foreignKey, $this->name);
+            $this->addImport(...$belong_to->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($belong_to);
+        }
+
+        $columns = array_filter($table->columns, function(DBColumn $column){ return !is_null($column->probable_table); });
+        foreach ($columns as $column) {
+            $this->_functions[] = $has_prop = BelongsTo::fromColumn($column, $this->name);
+            $this->addImport(...$has_prop->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_prop);
+        }
+    }
+
+    protected function hasOneRelation(DBTable $table)
+    {
+        $foreignKeys = array_filter($table->referencing_foreign_keys, function(DBForeignConstraint $constraint){ return $constraint->column->is_unique && !$constraint->column->is_multi_unique; });
+        foreach ($foreignKeys as $foreignKey) {
+            $this->_functions[] = $has_one = HasOne::fromForeignKey($foreignKey, $this->name);
+            $this->addImport(...$has_one->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_one);
+        }
+    }
+
+    protected function hasManyRelation(DBTable $table)
+    {
+        $foreignKeys = array_filter($table->referencing_foreign_keys, function(DBForeignConstraint $constraint){ return !$constraint->column->is_unique; });
+        foreach ($foreignKeys as $foreignKey) {
+            $this->_functions[] = $has_one = HasMany::fromForeignKey($foreignKey, $this->name);
+            $this->addImport(...$has_one->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_one);
+        }
     }
 
     public function setConnection(string $name)

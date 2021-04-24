@@ -44,10 +44,14 @@ class PhpDocProperty
 
     public static function fromRelationFunction(RelationshipFunction $relation)
     {
-        $me               = new self();
-        $me->name         = $relation->name;
-        $me->description  = '';
-        $me->data_types[] = $relation->return_result;
+        $me              = new self();
+        $me->name        = $relation->name;
+        $me->description = '';
+        if (is_array($relation->data_types)) {
+            $me->data_types = $relation->data_types;
+        } else {
+            $me->data_types[] = $relation->data_types;
+        }
         if ($relation->is_nullable) {
             $me->data_types[] = 'null';
         }

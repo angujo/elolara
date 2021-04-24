@@ -21,7 +21,7 @@ use Carbon\Carbon;
  * @property boolean $isChar
  * @property boolean $isDecimal
  * @property boolean $isFloat
- * @property boolean $isInt
+ * @property boolean $isInteger
  * @property boolean $isSmallint
  * @property boolean $isTinyint
  * @property boolean $isBigint

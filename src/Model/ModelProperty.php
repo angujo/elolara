@@ -47,10 +47,11 @@ class ModelProperty
 
     public static function forIncrementing(DBTable $table)
     {
-        if (!($primary = $table->primary_column) || ($primary->is_auto_incrementing && ($primary->data_type->isBigint || $primary->data_type->isInt))) {
+        if (($primary = $table->primary_column) && $primary->is_auto_incrementing && ($primary->data_type->isBigint || $primary->data_type->isInteger)) {
             return null;
         }
         $me         = new self();
+        $me->description = '* Indicates the IDs are not auto-incrementing';
         $me->var    = '* @var boolean';
         $me->access = 'public';
         $me->name   = 'incrementing';
@@ -60,7 +61,7 @@ class ModelProperty
 
     public static function forKeyType(DBTable $table)
     {
-        if (!($primary = $table->primary_column) || ($primary->data_type->isBigint || $primary->data_type->isInt)) {
+        if (!($primary = $table->primary_column) || ($primary->data_type->isBigint || $primary->data_type->isInteger)) {
             return null;
         }
         $me         = new self();

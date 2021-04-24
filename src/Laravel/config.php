@@ -35,6 +35,17 @@ return [
      */
     'db_directories'          => false,
     /*
+     * Set Column names as CONST within the models
+     * Allows column names to be called as User::EMAIL for email.
+     */
+    'constant_column_names'   => false,
+    /*
+     * When [constant_column_names] is enable,
+     * set the prefix to use.
+     * e.g. prefix = 'COL_' then column email becomes User::COL_EMAIL
+     */
+    'constant_column_prefix'  => null,
+    /*
      * Column names that are used for soft delete.
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
@@ -83,14 +94,21 @@ return [
      */
     'relation_naming'         => ['column', 'table', 'constraint'],
     /*
-     * Column naming pattern to auto identify without the Foreign Keys
-     * This will check column names and set relation based off them.
+     * Column naming pattern to auto identify relations for Foreign Keys
+     * This will check column names and set relation name based off them.
      * Percentage similarity will be set to 70%
      * Set to empty or null so as not to use.
      * E.g 1: if = [{relation_name}_id] or = [fk_{relation_name}] or = [fk_{relation_name}_id] when column name is user_manager_id then relation name will be userManager
      * i.e. use {relation_name} to indicate which part of column to be used as relation name.
      */
     'column_relation_pattern' => '{relation_name}_id',
+    /*
+     * Enable creation of relations based on column name.
+     * This allows the using only [column_relation_pattern] on the column name to create a relation.
+     * To work, the {relation_name} should referenced a table name in singular/plural format.
+     * Foreign keys will not be used for further checks
+     */
+    'column_auto_relate'      => true,
     /*
      * Class to be used for each and every generated model
      * Ensure it is or extends \Illuminate\Database\Eloquent\Model::class
@@ -109,7 +127,7 @@ return [
      */
     'eloquent_extension_name' => 'EloquentExtension',
     /*
-     * Create abstract classes to act as BASE Class for teh tables
+     * Create abstract classes to act as BASE Class for the tables
      */
     'base_abstract'           => true,
     /*
@@ -171,9 +189,9 @@ return [
      */
     'overwrite_models'        => false,
     /*
-     * Fully import classes even on same namespace
+     * Fully import classes even on same namespace (FQDN)
      */
-    'full_namespace_import'=>false,
+    'full_namespace_import'   => false,
     /*
      * If handling multiple schema/DBs and there's need to separate schema configurations,
      * Use below with options above to be replaced.

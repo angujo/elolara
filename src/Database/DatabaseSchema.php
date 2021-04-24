@@ -39,28 +39,28 @@ class DatabaseSchema extends BaseDBClass
             return array_filter($this->unique_constraints, function(DBUniqueConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
         }
         if ($column_name && is_string($column_name)) {
-            return array_filter($this->unique_constraints, function(DBUniqueConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
+            return array_filter($this->unique_constraints, function(DBUniqueConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && in_array($column_name, $foreign->column_names); });
         }
         return $this->unique_constraints["{$table_name}.{$name}"] ?? null;
     }
 
-    public function getPrimaryConstraint(string $table_name, ?string $name = null, ?string $column_name = null)
+    public function getPrimaryConstraint(string $table_name, string $name = null, string $column_name = null)
     {
-        if (!$column_name && (!$name || !is_string($name))) {
+        if (!$column_name && !$name) {
             return array_filter($this->primary_constraints, function(DBPrimaryConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
         }
-        if ($column_name && is_string($column_name)) {
-            return array_filter($this->primary_constraints, function(DBPrimaryConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
+        if ($column_name) {
+            return array_filter($this->primary_constraints, function(DBPrimaryConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && in_array($column_name, $foreign->column_names); });
         }
         return $this->primary_constraints["{$table_name}.{$name}"] ?? null;
     }
 
-    public function getReferencingForeignKeys(string $table_name, ?string $column_name = null)
+    public function getReferencingForeignKeys(string $table_name, string $column_name = null)
     {
         if ($column_name && is_string($column_name)) {
             return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
         }
-        return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
+        return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) ; });
     }
 
     /**
@@ -70,7 +70,7 @@ class DatabaseSchema extends BaseDBClass
      *
      * @return DBForeignConstraint|DBForeignConstraint[]|array|null
      */
-    public function getForeignKey(string $table_name , ?string $name = null, ?string $column_name = null)
+    public function getForeignKey(string $table_name, ?string $name = null, ?string $column_name = null)
     {
         if (!$column_name && (!$name || !is_string($name))) {
             return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
@@ -89,6 +89,17 @@ class DatabaseSchema extends BaseDBClass
     public function getTable($name)
     {
         return $this->tables[$name] ?? null;
+    }
+
+    public function getRelatableTable(string $search_name, ?string $column_name)
+    {
+        if (!trim($search_name)) {
+            return null;
+        }
+        return \Arr::first($this->tables, function(DBTable $t) use ($search_name, $column_name){
+            return $t->primary_column && in_array($t->name, [\Str::singular($search_name), \Str::plural($search_name)]) &&
+                !(\Arr::first($t->foreign_keys, function(DBForeignConstraint $fk) use ($column_name){ return in_array($column_name, [$fk->column_name, $fk->referenced_column_name]); }));
+        }) ?: null;
     }
 
     /**

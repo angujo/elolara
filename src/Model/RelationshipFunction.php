@@ -10,8 +10,10 @@ namespace Angujo\LaravelModel\Model;
 
 
 use Angujo\LaravelModel\Config;
+use Angujo\LaravelModel\Database\DBColumn;
 use Angujo\LaravelModel\Database\DBForeignConstraint;
 use Angujo\LaravelModel\Database\DBTable;
+use Angujo\LaravelModel\Model\Relations\RelationKeysInterface;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
 use Angujo\LaravelModel\Model\Traits\ImportsClass;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,108 +23,76 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  *
  * @package Angujo\LaravelModel\Model
  */
-class RelationshipFunction
+abstract class RelationshipFunction implements RelationKeysInterface
 {
     use HasTemplate, ImportsClass;
 
-    protected $template_name = 'function';
+    protected $template_name = 'relation-function';
 
     public $phpdoc_description;
-    public $phpdoc_params;
     public $phpdoc_return;
-    public $access;
-    public $name;
-    public $return_name;
-    public $return_result;
+    public $keys        = '';
+    public $_relations  = [];
+    public $classes     = '';
+    public $model_class = '';
+    public $rel_method;
     public $is_nullable = false;
-    public $args;
+    public $data_types  = [];
+    public $name;
+
+
+    public $return_name;
     public $content;
 
-    /**
-     * @param DBForeignConstraint $constraint
-     * @param array               $loads
-     * @param bool                $reference
-     *
-     * @return string|null
-     */
-    public static function relationName(DBForeignConstraint $constraint, array &$loads, bool $reference = false)
+    public function __construct(string $relation, $modelClass)
+    {
+        $this->model_class   = $modelClass;
+        $this->rel_method    = function_name_single(basename(static::class));
+        $this->phpdoc_return = class_name(basename($relation));
+        $this->addImport($relation);
+    }
+
+    protected function preProcessTemplate()
+    {
+        if (empty($this->_relations)) {
+            return;
+        }
+        $this->classes = implode(', ', array_map(function($cl){ return class_path($cl, true, true); }, $this->_relations));
+        if (is_array($this->keys)) {
+            $this->keys = implode(', ', array_map(function($k){ return var_export($k, true); }, $this->keys));
+        }
+        $this->keys = $this->keys ? ", {$this->keys}" : '';
+    }
+
+    protected function autoload()
+    {
+        $this->addImport(...array_filter($this->_relations, function($cl){
+            return 0 !== strcasecmp(basename($cl), $this->model_class) && (Config::full_namespace_import() || (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
+        }));
+    }
+
+    public static function relationName(DBForeignConstraint $constraint, array &$loads = [], bool $reference = false, $singular = true)
     {
         $sequence = Config::relation_naming();
+        $relation = $singular ? 'relation_name_singular' : 'relation_name_plural';
         foreach ($sequence as $key) {
             $name = null;
             switch (strtolower($key)) {
                 case 'column':
-                    if (false === stripos(Config::column_relation_pattern(), '{relation_name}')) {
-                        break;
-                    }
-                    $regx = '/'.str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()).'/';
-                    $name = preg_replace($regx, '$1', $reference ? $constraint->referenced_column_name : $constraint->column_name);
+                    $name = ($reference ? $constraint->referenced_column : $constraint->column)->{$relation};
                     break;
                 case 'table':
-                    $name = $reference ? $constraint->referenced_table_name : $constraint->table_name;
+                    $name = ($reference ? $constraint->table : $constraint->referenced_table)->{$relation};
                     break;
                 case 'constraint':
-                    $name = $constraint->name;
-                    break;
-                default:
-                    $name = null;
+                    $name = $constraint->{$relation};
                     break;
             }
-            if (is_null($name) || in_array($name = !$reference ? function_name_plural($name) : function_name_single($name), $loads)) {
+            if (is_null($name) || in_array($name, $loads)) {
                 continue;
             }
             return $loads[] = $name;
         }
         return null;
-    }
-
-    /**
-     * @param DBTable                $table
-     * @param array|PhpDocProperty[] $phpdoc_props
-     * @param array                  $imports
-     *
-     * @return array
-     */
-    public static function oneToOne(DBTable $table, array &$phpdoc_props, &$imports = [])
-    {
-        $functions   = [];
-        $foreignKeys = $table->foreign_keys;
-        $loads       = array_map(function(PhpDocProperty $prop){ return $prop->name; }, $phpdoc_props);
-        foreach ($foreignKeys as $foreignKey) {
-            $name = self::relationName($foreignKey, $loads, true);
-            if (!is_string($name)) {
-                continue;
-            }
-            $has_one             = self::hasOneContent($foreignKey, $name);
-            $imports        = array_merge($imports, $has_one->imports());
-            $functions[]    = $has_one;
-            $phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_one);
-        }
-        return $functions;
-    }
-
-    public static function hasOneContent(DBForeignConstraint $foreignKey, $name)
-    {
-        $same = false;
-        if (0 === strcasecmp(class_name($name), class_name($foreignKey->table->name))) {
-            $name = 'parent';
-            $same = true;
-        }
-        $me                     = new self();
-        $me->access             = 'public';
-        $me->name               = $name;
-        $me->args               = '';
-        $me->content            = 'return $this->hasOne('.class_path($foreignKey->referenced_table_name, true).', '.merged_columns($foreignKey->referenced_column_name,[$foreignKey->referenced_column_name,$foreignKey->table_name]).');';
-        $me->phpdoc_description = '* No Documentation';
-        $me->phpdoc_params      = '';
-        $me->is_nullable        = $foreignKey->column->is_nullable;
-        $me->return_name        = basename(HasOne::class);
-        $me->return_result      = basename(class_path($foreignKey->referenced_table_name));
-        $me->phpdoc_return      = '* @return '.$me->return_name;
-        if (!$same && Config::full_namespace_import()) {
-            $me->addImport(class_path($foreignKey->referenced_table_name));
-        }
-        $me->addImport(class_path(HasOne::class, false, true));
-        return $me;
     }
 }

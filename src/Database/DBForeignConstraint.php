@@ -17,6 +17,8 @@ namespace Angujo\LaravelModel\Database;
  * @property string       $name
  * @property string       $table_name
  * @property string       $column_name
+ * @property string       $relation_name_singular
+ * @property string       $relation_name_plural
  * @property DBColumn     $column
  * @property DBTable|null $table
  * @property string       $referenced_table_name
@@ -35,6 +37,16 @@ class DBForeignConstraint extends Traits\BaseDBClass
         parent::__construct($values);
     }
 
+    protected function relation_name_singular()
+    {
+        return function_name_single($this->name);
+    }
+
+    protected function relation_name_plural()
+    {
+        return function_name_plural($this->name);
+    }
+
     protected function column()
     {
         return $this->db->getColumn($this->table_name, $this->column_name);
@@ -47,7 +59,7 @@ class DBForeignConstraint extends Traits\BaseDBClass
 
     protected function referenced_column()
     {
-        return $this->db->getColumn($this->table_name, $this->referenced_column_name);
+        return $this->db->getColumn($this->referenced_table_name, $this->referenced_column_name);
     }
 
     protected function referenced_table()

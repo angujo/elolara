@@ -21,10 +21,12 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @package Angujo\LaravelModel
  *
  * @method static boolean full_namespace_import(Boolean $value = null)
- * @method static boolean date_base($value = null)
- * @method static boolean define_connection($value = null)
- * @method static boolean overwrite_models($value = null)
- * @method static boolean db_directories($value = null)
+ * @method static boolean column_auto_relate(Boolean $value = null)
+ * @method static boolean constant_column_names(Boolean $value = null)
+ * @method static boolean date_base(Boolean $value = null)
+ * @method static boolean define_connection(Boolean $value = null)
+ * @method static boolean overwrite_models(Boolean $value = null)
+ * @method static boolean db_directories(Boolean $value = null)
  * @method static string[]|array soft_delete_columns($value = null)
  * @method static string[]|array create_columns($value = null)
  * @method static string[]|array update_columns($value = null)
@@ -36,6 +38,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string model_class($value = null)
  * @method static string date_format($value = null)
  * @method static string base_dir($value = null)
+ * @method static string constant_column_prefix(string $value = null)
  * @method static boolean composite_keys($value = null)
  * @method static string eloquent_extension_name($value = null)
  * @method static boolean base_abstract($value = null)
@@ -73,6 +76,11 @@ class Config
     {
         self::$me = self::$me ?? new self();
         return !empty($args) ? call_user_func_array([self::$me, 'setProperty'], [$method, array_pop($args)]) : self::$me->getProperty($method);
+    }
+
+    public static function column_relation_regex()
+    {
+        return  '/'.str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()).'/';
     }
 
     public static function timestampColumnNames()

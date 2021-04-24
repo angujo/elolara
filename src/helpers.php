@@ -19,6 +19,13 @@ if (!function_exists('array_export')) {
     }
 }
 
+if (!function_exists('comma_list')) {
+    function comma_list(...$list)
+    {
+        return implode(', ', array_filter(array_map('trim', $list)));
+    }
+}
+
 if (!function_exists('function_name_single')) {
     function function_name_single($name)
     {
@@ -44,6 +51,39 @@ if (!function_exists('class_name')) {
     function class_name($name)
     {
         return ucfirst(\Str::camel(\Str::singular($name)));
+    }
+}
+
+if (!function_exists('array_combination')) {
+    function array_combination(array $array)
+    {
+        $results = [[]];
+
+        foreach ($array as $element) {
+            foreach ($results as $combination) {
+                array_push($results, array_merge([$element], $combination));
+            }
+        }
+
+        return $results;
+    }
+}
+
+if (!function_exists('relation_keys')) {
+    function relation_keys(array ...$columns)
+    {
+        $_columns = array_reverse($columns);
+        $output   = [];
+        foreach ($_columns as $column) {
+            if (!is_array($column) || 2 !== count($column)) {
+                return array_reverse($output);
+            }
+            if (empty($output) && 0 === strcasecmp($column[0], $column[1])) {
+                continue;
+            }
+            $output[] = $column[1];
+        }
+        return array_reverse($output);
     }
 }
 
@@ -83,15 +123,24 @@ if (!function_exists('merged_columns')) {
         if (empty(array_filter(array_column($columns, 1)))) {
             return null;
         }
+        return implode(', ', array_truncate($columns));
+    }
+}
+
+if (!function_exists('array_truncate')) {
+    function array_truncate(array $array)
+    {
+        $keys   = array_keys($array);
+        $array  = array_values($array);
         $values = [];
-        foreach ($columns as $i => $column) {
+        foreach ($array as $i => $column) {
             if (is_null($column[1])) {
                 if (empty(array_filter(array_slice($column, $i + 1)))) {
                     break;
                 }
-                $values[] = $column[0];
+                $values[$keys[$i]] = $column[0];
             }
         }
-        return implode(', ', $values);
+        return $values;
     }
 }
