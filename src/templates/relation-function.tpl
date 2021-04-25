@@ -4,5 +4,5 @@
 */
 public function {name}()
 {
-return $this->{rel_method}({classes}{keys});
+return $this->{rel_method}({classes}{keys}){rel_extend};
 }

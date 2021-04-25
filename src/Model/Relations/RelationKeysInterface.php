@@ -11,11 +11,12 @@ namespace Angujo\LaravelModel\Model\Relations;
 
 use Angujo\LaravelModel\Database\DBColumn;
 use Angujo\LaravelModel\Database\DBForeignConstraint;
+use Angujo\LaravelModel\Database\DBTable;
 
 interface RelationKeysInterface
 {
     /**
-     * @param DBForeignConstraint|DBColumn $source
+     * @param DBForeignConstraint|DBColumn|DBTable $source
      *
      * @return mixed
      */

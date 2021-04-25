@@ -43,8 +43,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string eloquent_extension_name($value = null)
  * @method static boolean base_abstract($value = null)
  * @method static string namespace($value = null)
- * @method static int pivot_level($value = null)
- * @method static string pivot_extension_name($value = null)
+ * @method static string pivot_name_regex($value = null)
  * @method static string column_relation_pattern($value = null)
  * @method static boolean polymorph($value = null)
  * @method static string[]|array type_casts($value = null)
@@ -85,7 +84,7 @@ class Config
 
     public static function timestampColumnNames()
     {
-        return array_merge([self::LARAVEL_TS_CREATED, self::LARAVEL_TS_UPDATED], self::create_columns(), self::update_columns());
+        return array_unique(array_merge([self::LARAVEL_TS_CREATED, self::LARAVEL_TS_UPDATED], self::create_columns(), self::update_columns()));
     }
 
     /**

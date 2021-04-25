@@ -135,17 +135,11 @@ return [
      */
     'namespace'               => 'App\Models',
     /*
-     * Pivoting allows Laravel's hasManyThrough to be extended.
-     * Currently, we extend upto 3 levels deep
-     * NOTE: This relies on foreign keys, so will not work if not set on tables.
-     * Any value greater than 3 will be considered as 3 and any less than zero converted to 0
+     * If you wish to rename pivot tables in belongsToMany relation,
+     * Set regex for naming pattern below. The name should be in teh table's comment
+     * E.g if set as '{pivot:(\w+)}', a table with comment "This is a table comment for {pivot:role_users}" will rename pivot to role_users instead of default pivot
      */
-    'pivot_level'             => 0,
-    /*
-     * This is the nested namespace from the "base_dir" above
-     * to be used for pivot tables
-     */
-    'pivot_extension_name'    => 'Pivots',
+    'pivot_name_regex'    => '{pivot:(\w+)}',
     /*
      * @link https://laravel.com/docs/eloquent-relationships#polymorphic-relations
      * Add polymorphic tables as well.

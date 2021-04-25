@@ -39,9 +39,9 @@ abstract class RelationshipFunction implements RelationKeysInterface
     public $is_nullable = false;
     public $data_types  = [];
     public $name;
+    public $rel_extend;
 
 
-    public $return_name;
     public $content;
 
     public function __construct(string $relation, $modelClass)

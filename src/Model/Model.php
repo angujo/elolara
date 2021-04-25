@@ -14,6 +14,7 @@ use Angujo\LaravelModel\Database\DBColumn;
 use Angujo\LaravelModel\Database\DBForeignConstraint;
 use Angujo\LaravelModel\Database\DBTable;
 use Angujo\LaravelModel\Model\Relations\BelongsTo;
+use Angujo\LaravelModel\Model\Relations\BelongsToMany;
 use Angujo\LaravelModel\Model\Relations\HasMany;
 use Angujo\LaravelModel\Model\Relations\HasOne;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
@@ -69,7 +70,6 @@ class Model
         [$cre, $upd] = ModelConst::forTimestamps($table);
         $this->_constants[]  = $cre;
         $this->_constants[]  = $upd;
-        $this->_properties[] = ModelProperty::forPrimaryKey($table);
         $this->_properties[] = ModelProperty::forDates($table);
         $this->_properties[] = ModelProperty::forAttributes($table);
         $this->_properties[] = ModelProperty::forCasts($table, $this->_imports);
@@ -77,8 +77,19 @@ class Model
         $this->hasOneRelation($table);
         $this->belongsToRelation($table);
         $this->hasManyRelation($table);
+        $this->belongsToManyRelation($table);
 
         $this->addImport(null);
+    }
+
+    protected function belongsToManyRelation(DBTable $table)
+    {
+        if (!$table->has_pivot) {
+            return;
+        }
+        $this->_functions[] = $bl_many = BelongsToMany::fromTable($table, $this->name);
+        $this->addImport(...$bl_many->imports());
+        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($bl_many);
     }
 
     protected function belongsToRelation(DBTable $table)
