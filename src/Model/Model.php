@@ -17,6 +17,11 @@ use Angujo\LaravelModel\Model\Relations\BelongsTo;
 use Angujo\LaravelModel\Model\Relations\BelongsToMany;
 use Angujo\LaravelModel\Model\Relations\HasMany;
 use Angujo\LaravelModel\Model\Relations\HasOne;
+use Angujo\LaravelModel\Model\Relations\MorphedByMany;
+use Angujo\LaravelModel\Model\Relations\MorphMany;
+use Angujo\LaravelModel\Model\Relations\MorphOne;
+use Angujo\LaravelModel\Model\Relations\MorphTo;
+use Angujo\LaravelModel\Model\Relations\MorphToMany;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
 use Angujo\LaravelModel\Model\Traits\ImportsClass;
 use Angujo\LaravelModel\Util;
@@ -76,10 +81,54 @@ class Model
 
         $this->hasOneRelation($table);
         $this->belongsToRelation($table);
+        $this->morphToRelations($table);
+        $this->morphOneRelations($table);
+        $this->morphManyRelations($table);
         $this->hasManyRelation($table);
         $this->belongsToManyRelation($table);
 
         $this->addImport(null);
+    }
+
+    protected function morphManyRelations(DBTable $table)
+    {
+        /** @var DBTable[] $manys */
+        $manys = array_filter($table->morph_manys, function(DBTable $t, string $key){ return !$t->uniqueMorph($key); }, ARRAY_FILTER_USE_BOTH);
+        foreach ($manys as $name => $table) {
+            $this->_functions[] = $morph_many = MorphMany::fromTable($name, $table, $this->name);
+            $this->addImport(...$morph_many->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_many);
+
+            /** @var DBColumn[] $columns */
+            $columns = array_filter($table->columns, function(DBColumn $col) use ($name){ return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]); });
+            foreach ($columns as $column) {
+                if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) {
+                    continue;
+                }
+                $this->_functions[] = $morph_many = MorphToMany::fromTable($name, $column, $_table, $this->name);
+                $this->addImport(...$morph_many->imports());
+                $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_many);
+            }
+        }
+    }
+
+    protected function morphOneRelations(DBTable $table)
+    {
+        $ones = array_filter($table->morph_manys, function(DBTable $t, string $key){ return $t->uniqueMorph($key); }, ARRAY_FILTER_USE_BOTH);
+        foreach ($ones as $name => $table) {
+            $this->_functions[] = $morph_one = MorphOne::fromTable($name, $table, $this->name);
+            $this->addImport(...$morph_one->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_one);
+        }
+    }
+
+    protected function morphToRelations(DBTable $table)
+    {
+        foreach ($table->morph_tos as $name => $tables) {
+            $this->_functions[] = $morph_to = MorphTo::fromTable($name, $this->name, $tables, $table->nullableMorphTo($name));
+            $this->addImport(...$morph_to->imports());
+            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_to);
+        }
     }
 
     protected function belongsToManyRelation(DBTable $table)
@@ -126,6 +175,16 @@ class Model
             $this->_functions[] = $has_one = HasMany::fromForeignKey($foreignKey, $this->name);
             $this->addImport(...$has_one->imports());
             $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_one);
+
+            if (!empty($morphTos = $foreignKey->table->morph_tos)) {
+                foreach ($morphTos as $name => $tables) {
+                    foreach ($tables as $_table) {
+                        $this->_functions[] = $morph_many = MorphedByMany::fromTable($name, $foreignKey->column, $_table, $this->name);
+                        $this->addImport(...$morph_many->imports());
+                        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_many);
+                    }
+                }
+            }
         }
     }
 

@@ -33,9 +33,9 @@ class DatabaseSchema extends BaseDBClass
         parent::__construct(['name' => $name]);
     }
 
-    public function getUniqueConstraint(string $table_name, ?string $name = null, ?string $column_name = null)
+    public function getUniqueConstraint(string $table_name, string $name = null, string $column_name = null)
     {
-        if (!$column_name && (!$name || !is_string($name))) {
+        if (!$column_name && !$name) {
             return array_filter($this->unique_constraints, function(DBUniqueConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
         }
         if ($column_name && is_string($column_name)) {
@@ -76,7 +76,7 @@ class DatabaseSchema extends BaseDBClass
             return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
         }
         if ($column_name && is_string($column_name)) {
-            return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
+            return \Arr::first($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
         }
         return $this->foreign_constraints["{$table_name}.{$name}"] ?? null;
     }

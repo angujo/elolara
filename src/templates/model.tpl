@@ -4,11 +4,11 @@ namespace {namespace};
 
 {imports}
 
-/**
-*
-{phpdoc_props}
-*
-*/
+ /**
+ *
+ {phpdoc_props}
+ *
+ */
 class {name} extends {parent}
 {
 {uses}

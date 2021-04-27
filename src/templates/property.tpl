@@ -1,5 +1,6 @@
-/**
-{description}
-{var}
-*/
-{access} ${name} = {value};
+
+     /**
+     {description}
+     {var}
+     */
+    {access} ${name} = {value};

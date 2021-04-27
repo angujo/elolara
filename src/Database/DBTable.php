@@ -37,9 +37,12 @@ use Angujo\LaravelModel\Database\Traits\HasName;
  * @property DBTable[]|array             $pivot_tables
  * @property DBColumn[]|array            $columns
  * @property DBColumn[]|array            $primary_columns
+ * @property DBUniqueConstraint[]|array  $unique_constraints
  * @property DBForeignConstraint[]|array $foreign_keys
  * @property DBForeignConstraint[]|array $referencing_foreign_keys
  * @property DBColumn|null               $primary_column
+ * @property array                       $morph_tos
+ * @property array                       $morph_manys
  */
 class DBTable extends BaseDBClass
 {
@@ -90,6 +93,11 @@ class DBTable extends BaseDBClass
         return $this->db->getColumn($this->name);
     }
 
+    protected function unique_constraints()
+    {
+        return $this->db->getUniqueConstraint($this->name);
+    }
+
     protected function foreign_keys()
     {
         return $this->db->getForeignKey($this->name);
@@ -108,6 +116,29 @@ class DBTable extends BaseDBClass
     protected function primary_column()
     {
         return 1 < count($this->primary_columns) ? null : \Arr::first($this->primary_columns);
+    }
+
+    protected function morph_tos()
+    {
+        return array_map(function($ts){ return array_map([$this->db, 'getTable'], $ts); }, $this->_props['morphs']['to'] ?? []);
+    }
+
+    protected function morph_manys()
+    {
+        return array_map([$this->db, 'getTable'], $this->_props['morphs']['many'] ?? []);
+    }
+
+    public function nullableMorphTo($name)
+    {
+        return $this->db->getColumn($this->name, "{$name}_id")->is_nullable && $this->db->getColumn($this->name, "{$name}_type")->is_nullable;
+    }
+
+    public function uniqueMorph($name)
+    {
+        $type = "{$name}_type";
+        $id   = "{$name}_id";
+        return !empty(array_filter($this->unique_constraints, function($c) use ($type, $id){ return 2 === count(array_intersect([$id, $type], $c->column_names)); })) ||
+            ($this->db->getColumn($this->name, $type)->is_unique && $this->db->getColumn($this->name, $id)->is_unique);
     }
 
     protected function pivot_tables()
@@ -154,6 +185,12 @@ class DBTable extends BaseDBClass
         $this->_props['has_pivot']            = true;
         $this->_props['pivot_table_name']     = $pivot_table_name;
         $this->_props['pivot_end_table_name'] = $pivot_end_table_name;
+        return $this;
+    }
+
+    public function setMorph(array $morph)
+    {
+        $this->_props['morphs'] = $morph[$this->name] ?? [];
         return $this;
     }
 }

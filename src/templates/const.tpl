@@ -1,2 +1,3 @@
-/** {var} {description} */
-{access} const {name} = {value};
+
+     /** {var} {description} */
+    {access} const {name} = {value};

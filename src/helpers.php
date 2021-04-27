@@ -75,6 +75,9 @@ if (!function_exists('relation_keys')) {
         $_columns = array_reverse($columns);
         $output   = [];
         foreach ($_columns as $column) {
+            if (is_string($column) || (is_array($column) && 1 === count($column))) {
+                $column = array_merge(Arr::wrap($column), Arr::wrap($column));
+            }
             if (!is_array($column) || 2 !== count($column)) {
                 return array_reverse($output);
             }

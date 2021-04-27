@@ -53,32 +53,46 @@ class Factory
         $dbms   = new DBMS($this->connection);
         $schema = $dbms->loadSchema();
         $this->tablesPivotRelations($schema);
-        $this->tablesMorphRelations($schema);
+        $morphs = $this->tablesMorphRelations($schema);
         $tables = $schema->tables;
         foreach ($tables as $table) {
+            $table->setMorph($morphs);
             $this->writeModel(Model::fromTable($table)->setConnection($this->con_name));
         }
     }
 
+    /**
+     * @param DatabaseSchema $schema
+     *
+     * @return array
+     */
     private function tablesMorphRelations(DatabaseSchema $schema)
     {
-        $tables   = $schema->tables;
-        $morphers = array_filter(array_map(function(DBTable $table){
-            $m = $_set = [];
+        $tables = $schema->tables;
+        $morphs = array_filter(array_map(function(DBTable $table){
+            $m = [];
             foreach ($table->columns as $column) {
                 if (!preg_match('/^(\w+)(_id|_type)$/', $column->name)) {
                     continue;
                 }
                 $name = preg_replace('/^(\w+)(_id|_type)$/', '$1', $column->name);
-                if (isset($_set[$name])) {
-                    $m[$name] = [preg_replace('/^(\w+)(id|type)$/', '$2', $column->name)=>$column->name, preg_replace('/^(\w+)(id|type)$/', '$2', $_set[$name])=>$_set[$name]];
-                } else {
-                    $_set[$name] = $column->name;
+                if (preg_match('/^(\w+)_type$/', $column->name)) {
+                    $m[$name]['tables'] = array_filter(preg_split('/(\s+)?,(\s+)?/', $column->comment), function($n){ return trim($n) && preg_match('/^([a-zA-Z][a-zA-Z0-9_]+)$/', $n); });
+                }
+                $m[$name][preg_replace('/^(\w+)(id|type)$/', '$2', $column->name)] = $column->name;
+            }
+            return array_filter($m, function($f){ return 3 === count($f); });
+        }, $tables), 'filled');
+        $output = [];
+        foreach ($morphs as $table_name => $_morphs) {
+            foreach ($_morphs as $morph => $entries) {
+                $output[$table_name]['to'][$morph] = $entries['tables'];
+                foreach ($entries['tables'] as $_table_name) {
+                    $output[$_table_name]['many'][$morph] = $table_name;
                 }
             }
-            return empty($m) ? null :$m;
-        }, $tables));
-        print_r($morphers);
+        }
+        return $output;
     }
 
     private function tablesPivotRelations(DatabaseSchema $schema)

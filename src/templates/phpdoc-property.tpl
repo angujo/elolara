@@ -1,1 +1,1 @@
-* @property {data_types} ${name} {description}
+ * @property {data_types} ${name} {description}

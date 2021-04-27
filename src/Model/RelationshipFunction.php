@@ -31,13 +31,14 @@ abstract class RelationshipFunction implements RelationKeysInterface
 
     public $phpdoc_description;
     public $phpdoc_return;
-    public $keys        = '';
-    public $_relations  = [];
-    public $classes     = '';
-    public $model_class = '';
+    public $keys              = '';
+    public $_relations        = [];
+    public $implied_relations = [];
+    public $classes           = '';
+    public $model_class       = '';
     public $rel_method;
-    public $is_nullable = false;
-    public $data_types  = [];
+    public $is_nullable       = false;
+    public $data_types        = [];
     public $name;
     public $rel_extend;
 
@@ -66,7 +67,8 @@ abstract class RelationshipFunction implements RelationKeysInterface
 
     protected function autoload()
     {
-        $this->addImport(...array_filter($this->_relations, function($cl){
+        $relations = array_unique(array_merge($this->_relations, $this->implied_relations));
+        $this->addImport(...array_filter($relations, function($cl){
             return 0 !== strcasecmp(basename($cl), $this->model_class) && (Config::full_namespace_import() || (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
         }));
     }
