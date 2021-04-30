@@ -192,6 +192,8 @@ return [
     'has_many_through'        => [['countries', 'users', 'posts'], 'countries,users,posts',],
     /*
      * Enter traits here used by all models.
+     * When used within [schemas], table name can be used as well.
+     * i.e. 'schemas'=>['db1'=>['traits'=[...],'tables'=>['table1'=>['traits'=>[...]]]]]
      * Full path(FQDN) should be used
      */
     'traits'                  => [UsesAccessor::class, UsesStaticAccessor::class,],
