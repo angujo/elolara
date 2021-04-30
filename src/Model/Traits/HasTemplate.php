@@ -18,7 +18,7 @@ trait HasTemplate
 {
     public function __toString()
     {
-        return (string)$this->processTemplate();
+        return $this->processTemplate();
     }
 
     /**
@@ -49,19 +49,7 @@ trait HasTemplate
             }
             $content = preg_replace('/\{(\s+)?'.$key.'(\s+)?\}/',(string) $value, $content);
         }
-        /*$vars = get_object_vars($this);
-        foreach ($vars as $var => $value) {
-            if (is_null($value)) {
-                continue;
-            }
-            if (is_array($value)) {
-                $value = implode(preg_match('/^_/', $var) ? "\n" : '|', array_map(function($v){ return (string)$v; }, (array_filter($value))));
-            }
-            $value   = (string)$value;
-            $var     = preg_replace('/^[_]+/', '', $var);
-            $content = preg_replace('/\{(\s+)?'.$var.'(\s+)?\}/', $value, $content);
-        }*/
-        $content = preg_replace('/{(\s+)?\w+(\s+)?}/', '', $content);
+        $content = preg_replace('/([\s\n]+)?{(\s+)?\w+(\s+)?}/', '', $content);
         return (string)$content;
     }
 }

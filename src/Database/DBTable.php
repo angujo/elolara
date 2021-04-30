@@ -23,6 +23,9 @@ use Angujo\LaravelModel\Database\Traits\HasName;
  * @property boolean                     $is_pivot
  * @property boolean                     $has_pivot
  * @property string                      $foreign_column_name
+ * @property string[]                    $foreign_column_names
+ * @property string[]                    $one_through
+ * @property string[]                    $many_through
  * @property string                      $class_name
  * @property string                      $relation_name_singular
  * @property string                      $relation_name_plural
@@ -83,6 +86,11 @@ class DBTable extends BaseDBClass
     protected function foreign_column_name()
     {
         return strtolower(\Str::singular(\Str::snake($this->name)).'_'.Config::LARAVEL_PRIMARY_KEY);
+    }
+
+    protected function foreign_column_names()
+    {
+        return [strtolower(\Str::singular(\Str::snake($this->name)).'_'.Config::LARAVEL_PRIMARY_KEY), strtolower(\Str::plural(\Str::snake($this->name)).'_'.Config::LARAVEL_PRIMARY_KEY)];
     }
 
     /**
@@ -156,6 +164,13 @@ class DBTable extends BaseDBClass
         return $this->has_pivot ? $this->db->getTable($this->pivot_end_table_name) : null;
     }
 
+    public function relationColumn(DBTable $endTable)
+    {
+        /** @var DBForeignConstraint $fk */
+        if ($fk = \Arr::first($this->foreign_keys, function(DBForeignConstraint $fk) use ($endTable){ return 0 === strcasecmp($fk->referenced_table_name, $endTable->name); })) return $fk->column;
+        return $this->columns["{$this->name}.{$endTable->foreign_column_name}"] ?? \Arr::first($this->columns, function(DBColumn $column) use ($endTable){ return in_array($column, $endTable->foreign_column_names); });
+    }
+
     /**
      * @param string $table_name
      *
@@ -191,6 +206,18 @@ class DBTable extends BaseDBClass
     public function setMorph(array $morph)
     {
         $this->_props['morphs'] = $morph[$this->name] ?? [];
+        return $this;
+    }
+
+    public function setOneThrough(array $throughs)
+    {
+        $this->_props['one_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts);}, $throughs[$this->name] ?? []);
+        return $this;
+    }
+
+    public function setManyThrough(array $throughs)
+    {
+        $this->_props['many_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts);}, $throughs[$this->name] ?? []);
         return $this;
     }
 }

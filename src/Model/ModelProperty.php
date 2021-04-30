@@ -13,6 +13,8 @@ use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\DBColumn;
 use Angujo\LaravelModel\Database\DBTable;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
+use Angujo\LaravelModel\Model\Traits\ImportsClass;
+use Angujo\LaravelModel\Model\Traits\UsesTraits;
 
 /**
  * Class ModelProperty
@@ -22,7 +24,7 @@ use Angujo\LaravelModel\Model\Traits\HasTemplate;
  */
 class ModelProperty
 {
-    use HasTemplate;
+    use HasTemplate, ImportsClass,UsesTraits;
 
     protected $template_name = 'property';
 
@@ -50,12 +52,12 @@ class ModelProperty
         if (($primary = $table->primary_column) && $primary->is_auto_incrementing && ($primary->data_type->isBigint || $primary->data_type->isInteger)) {
             return null;
         }
-        $me         = new self();
+        $me              = new self();
         $me->description = '* Indicates the IDs are not auto-incrementing';
-        $me->var    = '* @var boolean';
-        $me->access = 'public';
-        $me->name   = 'incrementing';
-        $me->value  = 'false';
+        $me->var         = '* @var boolean';
+        $me->access      = 'public';
+        $me->name        = 'incrementing';
+        $me->value       = 'false';
         return $me;
     }
 
@@ -80,6 +82,20 @@ class ModelProperty
         $me->access      = 'protected';
         $me->name        = 'table';
         $me->value       = var_export($table->name, true);
+        return $me;
+    }
+
+    public static function forSoftDeletion(DBTable $table)
+    {
+        if (1 === count(array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, Config::timestampColumnNames()); }))) {
+            return null;
+        }
+        $me              = new self();
+        $me->var         = '* @var boolean';
+        $me->description = '* Indicates if the model should be timestamped. ';
+        $me->access      = 'public';
+        $me->name        = 'timestamps';
+        $me->value       = 'false';
         return $me;
     }
 
@@ -162,9 +178,10 @@ class ModelProperty
         return $me;
     }
 
-    public static function forCasts(DBTable $table, array &$imports = [])
+    public static function forCasts(DBTable $table)
     {
-        $cols = array_filter(array_map(function(DBColumn $column) use (&$imports){
+        $imp  = [];
+        $cols = array_filter(array_map(function(DBColumn $column) use (&$imp){
             $casts = Config::type_casts();
             foreach ($casts as $col_reg => $cast) {
                 if (0 === strcasecmp($col_reg, $column->name) ||
@@ -172,8 +189,8 @@ class ModelProperty
                     0 === strcasecmp($col_reg, "type:{$column->type}") ||
                     0 === strcasecmp($col_reg, "type:{$column->column_type}")) {
                     if (is_array($cast)) {
-                        $imports[] = $cast[0];
-                        $cast      = $cast[1];
+                        $imp[] = $cast[0];
+                        $cast  = $cast[1];
                     }
                     return [$column->name, $cast];
                 }
@@ -183,7 +200,8 @@ class ModelProperty
         if (empty($cols)) {
             return null;
         }
-        $me              = new self();
+        $me = new self();
+        $me->addImport(...$imp);
         $me->var         = '* @var array';
         $me->description = '* Attributes that should be cast';
         $me->access      = 'protected';

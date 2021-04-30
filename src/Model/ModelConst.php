@@ -32,9 +32,9 @@ class ModelConst
     public $name;
     public $value;
 
-    public static function fromColumn(DBColumn $column, array &$imports = [], ?string $name = null)
+    public static function fromColumn(DBColumn $column, ?string $name = null)
     {
-        if (!Config::constant_column_names() || in_array($column->name, Config::LARAVEL_CONSTANTS)) {
+        if (in_array(($name?:$column->name), Config::LARAVEL_CONSTANTS)) {
             return null;
         }
         $me         = new self();
@@ -43,29 +43,31 @@ class ModelConst
         $me->name   = strtoupper(\Str::slug(((string)Config::constant_column_prefix()).($name ?: $column->name), '_'));
         $me->value  = "'{$column->name}'";
         $me->addImport($column->data_type->imports());
-        $imports = array_merge($imports, $me->imports());
+        // $imports = array_merge($imports, $me->imports());
         return $me;
     }
 
     public static function forTimestamps(DBTable $table)
     {
+        $outs = [null, null];
         if (1 != count($created = array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, array_merge([Config::LARAVEL_TS_CREATED], Config::create_columns())); }))) {
-            return null;
+            return $outs;
         }
         if (1 != count($updated = array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, array_merge([Config::LARAVEL_TS_UPDATED], Config::update_columns())); }))) {
-            return null;
+            return $outs;
         }
         /** @var DBColumn $created */
         $created = array_pop($created);
         /** @var DBColumn $updated */
         $updated = array_pop($updated);
-        $outs    = [null, null];
-        $im      = [];
+        if (!$created->data_type->isTimestamp || !$updated->data_type->isTimestamp) {
+            return $outs;
+        }
         if (0 !== strcasecmp(Config::LARAVEL_TS_CREATED, $created->name)) {
-            $outs[0] = self::fromColumn($created, $im, Config::LARAVEL_TS_CREATED);
+            $outs[0] = self::fromColumn($created, Config::LARAVEL_TS_CREATED);
         }
         if (0 !== strcasecmp(Config::LARAVEL_TS_UPDATED, $updated->name)) {
-            $outs[1] = self::fromColumn($updated, $im, Config::LARAVEL_TS_UPDATED);
+            $outs[1] = self::fromColumn($updated, Config::LARAVEL_TS_UPDATED);
         }
         return $outs;
     }

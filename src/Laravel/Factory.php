@@ -13,6 +13,7 @@ use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\DatabaseSchema;
 use Angujo\LaravelModel\Database\DBMS;
 use Angujo\LaravelModel\Database\DBTable;
+use Angujo\LaravelModel\Model\CoreModel;
 use Angujo\LaravelModel\Model\Model;
 use Illuminate\Database\ConnectionInterface;
 
@@ -52,13 +53,69 @@ class Factory
     {
         $dbms   = new DBMS($this->connection);
         $schema = $dbms->loadSchema();
+
+        $this->prepareDirs();
+        $this->writeCoreModel();
+
         $this->tablesPivotRelations($schema);
-        $morphs = $this->tablesMorphRelations($schema);
-        $tables = $schema->tables;
+        $morphs      = $this->tablesMorphRelations($schema);
+        $oneThrough  = $this->oneThroughRelations();
+        $manyThrough = $this->manyThroughRelations();
+        $tables      = $schema->tables;
         foreach ($tables as $table) {
             $table->setMorph($morphs);
-            $this->writeModel(Model::fromTable($table)->setConnection($this->con_name));
+            $table->setOneThrough($oneThrough);
+            $table->setManyThrough($manyThrough);
+            if (Config::base_abstract()) {
+                $this->writeModel(Model::fromTable($table, true)->setConnection($this->con_name));
+                $this->writeModel(Model::fromTable($table, false));
+            } else  $this->writeModel(Model::fromTable($table, true)->setConnection($this->con_name));
         }
+    }
+
+    protected function prepareDirs()
+    {
+        if (!file_exists($cd = Config::extensions_dir())) mkdir($cd);
+        if (!is_writable($cd)) throw new \Exception("'{$cd}' is not writeable!");
+
+        if (!file_exists($md = Config::models_dir())) mkdir($md);
+        if (!is_writable($md)) throw new \Exception("'{$md}' is not writeable!");
+
+        if (Config::base_abstract()) {
+            if (!file_exists($dir = Config::abstracts_dir()) || !is_dir($dir)) mkdir($dir);
+            if (!is_writable($dir)) throw new \Exception("'{$dir}' is not writeable!");
+        }
+        print_r([Config::models_dir(), Config::abstracts_dir()]);
+    }
+
+    private function oneThroughRelations()
+    {
+        $ones     = $this->throughList(Config::has_one_through());
+        $throughs = [];
+        foreach ($ones as $tables) {
+            $k              = array_pop($tables);
+            $throughs[$k][] = $tables;
+        }
+        return $throughs;
+    }
+
+    private function manyThroughRelations()
+    {
+        $manys    = $this->throughList(Config::has_many_through());
+        $throughs = [];
+        foreach ($manys as $tables) {
+            $k              = array_pop($tables);
+            $throughs[$k][] = $tables;
+        }
+        return $throughs;
+    }
+
+    private function throughList($list)
+    {
+        return array_filter(array_map(function($tbls){
+            if (is_string($tbls)) $tbls = array_map('trim', array_filter(explode(',', $tbls)));
+            return !is_array($tbls) || blank($tbls) || 3 !== count($tbls) ? null : $tbls;
+        }, $list ?? []));
     }
 
     /**
@@ -72,9 +129,8 @@ class Factory
         $morphs = array_filter(array_map(function(DBTable $table){
             $m = [];
             foreach ($table->columns as $column) {
-                if (!preg_match('/^(\w+)(_id|_type)$/', $column->name)) {
-                    continue;
-                }
+                if (!preg_match('/^(\w+)(_id|_type)$/', $column->name)) continue;
+
                 $name = preg_replace('/^(\w+)(_id|_type)$/', '$1', $column->name);
                 if (preg_match('/^(\w+)_type$/', $column->name)) {
                     $m[$name]['tables'] = array_filter(preg_split('/(\s+)?,(\s+)?/', $column->comment), function($n){ return trim($n) && preg_match('/^([a-zA-Z][a-zA-Z0-9_]+)$/', $n); });
@@ -129,6 +185,16 @@ class Factory
 
     protected function writeModel(Model $model)
     {
-        file_put_contents(preg_replace(['/\\\$/', '/\/$/'], '', Config::base_dir()).DIRECTORY_SEPARATOR.$model->name.'.php', (string)$model);
+        $path = (Config::base_abstract() && $model->base_model ? Config::abstracts_dir() : Config::models_dir()).$model->name.'.php';
+        if (!Config::overwrite_models() && false === $model->base_model && file_exists($path)) return;
+        file_put_contents($path, (string)$model);
+    }
+
+    protected function writeCoreModel()
+    {
+        $model = CoreModel::load();
+        $path  = Config::extensions_dir().$model->name.'.php';
+        if (file_exists($path)) return;
+        file_put_contents($path, (string)$model);
     }
 }

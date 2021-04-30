@@ -50,7 +50,7 @@ return [
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'soft_delete_columns'     => ['deleted_at'],
+    'soft_delete_columns'     => ['deleted_at', 'deleted'],
     /*
      * Column names to mark as create columns
      * If different naming across tables, add them here.
@@ -120,16 +120,26 @@ return [
     'base_dir'                => app_path('Models'),
     /*
      * Enable composite keys in laravel
+     * Currently not supported
      */
     'composite_keys'          => true,
     /*
-     * Name of class to be used in customizing Eloquent to accommodate composite keys.
+     * Name of class to be used in customizing Eloquent to accommodate package changes.
+     * E.g. models will be appended static class morphName() to allow access of relation name used.
      */
-    'eloquent_extension_name' => 'EloquentExtension',
+    'eloquent_extension_name' => 'Extension',
     /*
-     * Create abstract classes to act as BASE Class for the tables
+     * Create abstract classes to act as BASE abstract Class for the tables
+     * It is HIGHLY RECOMMENDED to enable this.
+     * Enables you to generate models based on changes without affecting your custom code
+     * on child models.
      */
     'base_abstract'           => true,
+    /*
+     * Prefix for the abstract classes
+     * Default: Base
+     */
+    'base_abstract_prefix'    => 'Base',
     /*
      * Namespace for the models
      */
@@ -139,33 +149,7 @@ return [
      * Set regex for naming pattern below. The name should be in teh table's comment
      * E.g if set as '{pivot:(\w+)}', a table with comment "This is a table comment for {pivot:role_users}" will rename pivot to role_users instead of default pivot
      */
-    'pivot_name_regex'    => '{pivot:(\w+)}',
-    /*
-     * @link https://laravel.com/docs/eloquent-relationships#polymorphic-relations
-     * Add polymorphic tables as well.
-     * To set this up column naming should be as described in laravel
-     * On the "_type" list all tables to be referenced on the column's comments (Optional)
-     * The primaryKey of the referenced table will be considered by default, otherwise,
-     * the column name should be indicated if different from primaryKey
-     * If the morph is not one to many, an indicator should be added i.e. 1-1=One to One, 1-0=One to Many(default), 0-0=Many to Many
-     *
-     * Syntax 1: table_name1,table_name2,.... table_nameN -- primary column used and one to many assumed
-     * Syntax 2: table_name1:column_name1,table_name2:column_name2,... table_nameN:column_nameN -- primary column not used but one to many assumed
-     * Syntax 3: table_name1:1-1,table_name2:1,... table_nameN:1-1, -- One to One reference with primaryKey used
-     * Syntax 4: table_name1:column_name1:1-1,table_name2:column_name2:1-1,... table_nameN:column_nameN:1-1 -- primary column not used and one to one used
-     * Syntax 5: table_name1:column_name1:0-0,table_name2:column_name2:0-0,... table_nameN:column_nameN:0-0 -- primary column not used and many to many used
-     *
-     * For Many to Many Polymorph,
-     * The "_id" column's comment should contain third table's reference.
-     * Otherwise, the table should have three columns where the third will be assumed as the end point table.
-     *
-     * In addition to above, you can add schema/database name, enclosed in a bracket, to the table name i.e. (db_name)table_name1,...
-     * This is in case the referenced table belongs to a different schema
-     *
-     * ONLY POSSIBLE FOR NON-COMPOSITE PRI-KEYs
-     * All listing should be separated by a comma
-     */
-    'polymorph'               => true,
+    'pivot_name_regex'        => '{pivot:(\w+)}',
     /*
      * @see https://laravel.com/docs/eloquent-mutators#attribute-casting
      * Type Casting for properties and database values.
@@ -187,12 +171,38 @@ return [
      */
     'full_namespace_import'   => false,
     /*
+     * @see https://laravel.com/docs/eloquent-relationships#has-one-through
+     * This is a complex relation and currently no safe way to implement.
+     * Use below entry to define table relations.
+     * Entries need to be sequential starting from parent table to target table and pivot in between.
+     * THIS ENTRY WILL BE IGNORED UNLESS USED WITHIN [schemas] BELOW.
+     */
+    'has_one_through'         => [['mechanics', 'cars', 'owners'], 'mechanics,cars,owners',],
+    /*
+     * @see https://laravel.com/docs/eloquent-relationships#has-many-through
+     * This is a complex relation and currently no safe way to implement.
+     * Use below entry to define table relations.
+     * Entries need to be sequential starting from parent table to target table and pivot in between.
+     * THIS ENTRY WILL BE IGNORED UNLESS USED WITHIN [schemas] BELOW.
+     */
+    'has_many_through'        => [['countries', 'users', 'posts'], 'countries,users,posts',],
+    /*
+     * Enter traits here used by all models.
+     * Full path(FQDN) should be used
+     */
+    'traits'                  => ['Angujo\LaravelModel\Lib\UsesAccessor', 'Angujo\LaravelModel\Lib\UsesStaticAccessor'],
+    /*
      * If handling multiple schema/DBs and there's need to separate schema configurations,
      * Use below with options above to be replaced.
      * An example has been commented out.
      * Schemas ignored by default are: mysql,sys,information_schema,master,template
      */
     'schemas'                 => [
+        /*
+         * Define [has_one_through] and [has_many_through] here within the schema name
+         * E.g. 'db1'=>['has_many_through'        => [['countries', 'users', 'posts'], 'countries,users,posts',],
+         *               'has_one_through'         => [['mechanics', 'cars', 'owners'], 'mechanics,cars,owners',],]
+         */
         /*
           'information_schema' => [
             'excluded_tables' => ['migrations', 'password_resets'],

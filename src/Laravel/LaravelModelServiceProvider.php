@@ -33,6 +33,6 @@ class LaravelModelServiceProvider extends \Illuminate\Support\ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([ModelCommand::class]);
         }
-        $this->publishes([__DIR__.DIRECTORY_SEPARATOR.'config.php' => config_path(Config::CONFIG_NAME.'.php')]);
+        $this->publishes([__DIR__.DIRECTORY_SEPARATOR.'config.php' => config_path(LM_APP_NAME.'.php')]);
     }
 }

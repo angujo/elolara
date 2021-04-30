@@ -42,4 +42,10 @@ class Util
     {
         return ucfirst(\Str::camel(\Str::singular($name)));
     }
+
+    public static function baseClassName(string $name)
+    : string
+    {
+        return ucfirst(\Str::camel(Config::abstracts_prefix().ucfirst(\Str::singular($name))));
+    }
 }

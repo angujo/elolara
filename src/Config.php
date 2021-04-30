@@ -33,6 +33,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string[]|array excluded_tables($value = null)
  * @method static string[]|array only_tables($value = null)
  * @method static string[]|array relation_naming($value = null)
+ * @method static string[]|array core_traits()
  * @method static string relation_remove_prx($value = null)
  * @method static string relation_remove_sfx($value = null)
  * @method static string model_class($value = null)
@@ -40,13 +41,14 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string base_dir($value = null)
  * @method static string constant_column_prefix(string $value = null)
  * @method static boolean composite_keys($value = null)
- * @method static string eloquent_extension_name($value = null)
+ * @method static string eloquent_extension_name(string $value = null)
  * @method static boolean base_abstract($value = null)
  * @method static string namespace($value = null)
+ * @method static string base_abstract_prefix($value = null)
  * @method static string pivot_name_regex($value = null)
  * @method static string column_relation_pattern($value = null)
- * @method static boolean polymorph($value = null)
- * @method static string[]|array type_casts($value = null)
+ * @method static string[]|array has_one_through($value = null)
+ * @method static string[]|array has_many_through($value = null)
  */
 class Config
 {
@@ -67,6 +69,7 @@ class Config
     protected function __construct()
     {
         $this->values = array_replace($this->defaults(), $this->user());
+        $this->setCoreTraits();
         $this->cleanCasts();
         $this->values['overwrite_models'] = false;
     }
@@ -79,7 +82,7 @@ class Config
 
     public static function column_relation_regex()
     {
-        return  '/'.str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()).'/';
+        return '/'.str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()).'/';
     }
 
     public static function timestampColumnNames()
@@ -95,7 +98,7 @@ class Config
     public static function schemaConfig($schema_name)
     : Config
     {
-        $schema = (self::$me = self::$me ?? new self())->values['schemas'][$schema_name] ?? [];
+        $schema = (self::$me ?? (self::$me = new self()))->values['schemas'][$schema_name] ?? [];
         unset(self::$me->values['schemas']);
         self::$me->values = array_replace(self::$me->values, $schema);
         self::$me->cleanCasts();
@@ -105,6 +108,55 @@ class Config
     public static function all()
     {
         return (self::$me ?? new self())->values;
+    }
+
+    public static function models_dir()
+    {
+        return preg_replace(['/\\$/', '/\/$/'], '', self::base_dir()).DIRECTORY_SEPARATOR;
+    }
+
+    public static function abstracts_prefix()
+    {
+        $df = self::base_abstract_prefix();
+        if (!is_string($df)) $df = 'Base';
+        return preg_replace('/[^a-zA-Z0-9_]/', '', $df ?: '') ?: 'Base';
+    }
+
+    public static function extension_ns()
+    {
+        $df = self::eloquent_extension_name();
+        if (!is_string($df)) $df = 'Extension';
+        return Util::className(preg_replace('/[^a-zA-Z0-9_]/', '', $df ?: '')) ?: 'Extension';
+    }
+
+    public static function super_model_name()
+    {
+        return Util::className(LM_APP_NAME.'_model');
+    }
+
+    public static function extensions_dir()
+    {
+        return self::models_dir().self::extension_ns().DIRECTORY_SEPARATOR;
+    }
+
+    public static function extension_namespace()
+    {
+        return self::namespace().'\\'.self::extension_ns();
+    }
+
+    public static function super_model_fqdn()
+    {
+        return self::namespace().'\\'.self::extension_ns().'\\'.self::super_model_name();
+    }
+
+    public static function abstracts_namespace()
+    {
+        return self::namespace().'\\'.self::abstracts_prefix();
+    }
+
+    public static function abstracts_dir()
+    {
+        return self::models_dir().self::abstracts_prefix().DIRECTORY_SEPARATOR;
     }
 
     private function getProperty($method)
@@ -124,7 +176,9 @@ class Config
      */
     private function defaults()
     {
-        return include(__DIR__.DIRECTORY_SEPARATOR.'Laravel'.DIRECTORY_SEPARATOR.'config.php');
+        $configs = include(__DIR__.DIRECTORY_SEPARATOR.'Laravel'.DIRECTORY_SEPARATOR.'config.php');
+        unset($configs['has_one_through'], $configs['has_many_through']);
+        return $configs;
     }
 
     /**
@@ -132,7 +186,14 @@ class Config
      */
     private function user()
     {
-        return config(self::CONFIG_NAME);
+        return config(LM_APP_NAME);
+    }
+
+    protected function setCoreTraits()
+    {
+        if (empty($this->values['traits'])) return;
+        $this->values['core_traits'] = (array_filter($this->values['traits'], 'is_string'));
+        unset($this->values['traits']);
     }
 
     protected function cleanCasts()

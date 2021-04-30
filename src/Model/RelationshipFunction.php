@@ -69,7 +69,7 @@ abstract class RelationshipFunction implements RelationKeysInterface
     {
         $relations = array_unique(array_merge($this->_relations, $this->implied_relations));
         $this->addImport(...array_filter($relations, function($cl){
-            return 0 !== strcasecmp(basename($cl), $this->model_class) && (Config::full_namespace_import() || (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
+            return 0 !== strcasecmp(basename($cl), $this->model_class) && (Config::full_namespace_import() || Config::base_abstract() || (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
         }));
     }
 

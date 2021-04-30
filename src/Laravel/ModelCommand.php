@@ -10,15 +10,16 @@ namespace Angujo\LaravelModel\Laravel;
 
 
 use Angujo\LaravelModel\Config;
+use Illuminate\Console\Command;
 
 /**
  * Class ModelCommand
  *
  * @package Angujo\LaravelModel\Laravel
  */
-class ModelCommand extends \Illuminate\Console\Command
+class ModelCommand extends Command
 {
-    protected $signature = 'laravelmodel:generate
+    protected $signature = LM_APP_NAME.':generate
                             {--i|interactive : Interactive command interface}
                             {--f|force : Force overwrite of Base and Model files (not recommended)}
                             {--m|migrate : Perform migration first}
