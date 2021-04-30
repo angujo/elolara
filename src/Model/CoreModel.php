@@ -1,41 +1,41 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-18 17:42
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile Model.php
  */
 
-namespace Angujo\LaravelModel\Model;
+namespace Angujo\Elolara\Model;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\Relations\BelongsTo;
-use Angujo\LaravelModel\Model\Relations\BelongsToMany;
-use Angujo\LaravelModel\Model\Relations\HasMany;
-use Angujo\LaravelModel\Model\Relations\HasManyThrough;
-use Angujo\LaravelModel\Model\Relations\HasOne;
-use Angujo\LaravelModel\Model\Relations\HasOneThrough;
-use Angujo\LaravelModel\Model\Relations\MorphedByMany;
-use Angujo\LaravelModel\Model\Relations\MorphMany;
-use Angujo\LaravelModel\Model\Relations\MorphOne;
-use Angujo\LaravelModel\Model\Relations\MorphTo;
-use Angujo\LaravelModel\Model\Relations\MorphToMany;
-use Angujo\LaravelModel\Model\Traits\HasMetaData;
-use Angujo\LaravelModel\Model\Traits\HasTemplate;
-use Angujo\LaravelModel\Model\Traits\ImportsClass;
-use Angujo\LaravelModel\Model\Traits\UsesTraits;
-use Angujo\LaravelModel\Util;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Relations\BelongsTo;
+use Angujo\Elolara\Model\Relations\BelongsToMany;
+use Angujo\Elolara\Model\Relations\HasMany;
+use Angujo\Elolara\Model\Relations\HasManyThrough;
+use Angujo\Elolara\Model\Relations\HasOne;
+use Angujo\Elolara\Model\Relations\HasOneThrough;
+use Angujo\Elolara\Model\Relations\MorphedByMany;
+use Angujo\Elolara\Model\Relations\MorphMany;
+use Angujo\Elolara\Model\Relations\MorphOne;
+use Angujo\Elolara\Model\Relations\MorphTo;
+use Angujo\Elolara\Model\Relations\MorphToMany;
+use Angujo\Elolara\Model\Traits\HasMetaData;
+use Angujo\Elolara\Model\Traits\HasTemplate;
+use Angujo\Elolara\Model\Traits\ImportsClass;
+use Angujo\Elolara\Model\Traits\UsesTraits;
+use Angujo\Elolara\Util;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class Model
  *
- * @package Angujo\LaravelModel\Model
+ * @package Angujo\Elolara\Model
  */
 class CoreModel
 {

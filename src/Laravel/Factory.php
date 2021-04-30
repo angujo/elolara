@@ -1,26 +1,26 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-18 03:10
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile Factory.php
  */
 
-namespace Angujo\LaravelModel\Laravel;
+namespace Angujo\Elolara\Laravel;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DatabaseSchema;
-use Angujo\LaravelModel\Database\DBMS;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\CoreModel;
-use Angujo\LaravelModel\Model\Model;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DatabaseSchema;
+use Angujo\Elolara\Database\DBMS;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\CoreModel;
+use Angujo\Elolara\Model\Model;
 use Illuminate\Database\ConnectionInterface;
 
 /**
  * Class Factory
  *
- * @package Angujo\LaravelModel\Laravel
+ * @package Angujo\Elolara\Laravel
  */
 class Factory
 {

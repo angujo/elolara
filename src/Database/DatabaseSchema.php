@@ -1,23 +1,23 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-12 14:12
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile Database.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
-use Angujo\LaravelModel\Database\Traits\BaseDBClass;
-use Angujo\LaravelModel\Database\Traits\HasName;
+use Angujo\Elolara\Database\Traits\BaseDBClass;
+use Angujo\Elolara\Database\Traits\HasName;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\JoinClause;
 
 /**
  * Class Database
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  *
  * @property string                      $name
  * @property array|DBTable[]             $tables

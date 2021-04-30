@@ -1,12 +1,12 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-20 23:47
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile helpers.php
  */
 
-use Angujo\LaravelModel\Database\DBTable;
+use Angujo\Elolara\Database\DBTable;
 
 if (!function_exists('array_export')) {
     function array_export(array $arr, $print = false)
@@ -43,7 +43,7 @@ if (!function_exists('function_name_plural')) {
 if (!function_exists('class_path')) {
     function class_path($name, $base = false, $ext = false)
     {
-        return $base ? ($ext ? basename($name) : class_name($name)).'::class' : ($ext ? $name : (\Angujo\LaravelModel\Config::namespace().'\\'.class_name($name)));
+        return $base ? ($ext ? basename($name) : class_name($name)).'::class' : ($ext ? $name : (\Angujo\Elolara\Config::namespace().'\\'.class_name($name)));
     }
 }
 
@@ -93,7 +93,7 @@ if (!function_exists('relation_keys')) {
 if (!function_exists('foreign_key')) {
     function foreign_key(string $column_name, string $target_table_name, $both = false)
     {
-        $sus = implode('_', [strtolower(Str::snake($target_table_name)), \Angujo\LaravelModel\Config::LARAVEL_PRIMARY_KEY]);
+        $sus = implode('_', [strtolower(Str::snake($target_table_name)), \Angujo\Elolara\Config::LARAVEL_PRIMARY_KEY]);
         return $both ? [$column_name, 0 === strcasecmp($column_name, $sus) ? null : $column_name] : $column_name;// 0 === strcasecmp($column_name, $sus) ? null : $column_name;
     }
 }
@@ -109,7 +109,7 @@ if (!function_exists('local_key')) {
         if (is_a($table, DBTable::class) && $table->primary_column) {
             $table = $table->primary_column->name;
         }
-        $sus = is_string($table) && 0 === strcasecmp(\Angujo\LaravelModel\Config::LARAVEL_PRIMARY_KEY, $table) ? $table : null;
+        $sus = is_string($table) && 0 === strcasecmp(\Angujo\Elolara\Config::LARAVEL_PRIMARY_KEY, $table) ? $table : null;
         return $both ? [$table, $sus] : $sus;
     }
 }

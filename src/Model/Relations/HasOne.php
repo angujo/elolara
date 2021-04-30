@@ -1,23 +1,23 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-24 14:03
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile HasOne.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Model\RelationshipFunction;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Relations\HasOne as LaravelHasOne;
 
 /**
  * Class HasOne
  *
- * @package Angujo\LaravelModel\Model\Relations
+ * @package Angujo\Elolara\Model\Relations
  */
 class HasOne extends RelationshipFunction
 {

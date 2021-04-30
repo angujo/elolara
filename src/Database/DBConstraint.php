@@ -1,20 +1,20 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-12 14:09
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile DBConstraint.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
-use Angujo\LaravelModel\Database\Traits\HasName;
+use Angujo\Elolara\Database\Traits\HasName;
 
 /**
  * Class DBConstraint
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  */
 class DBConstraint
 {

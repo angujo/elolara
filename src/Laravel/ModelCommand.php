@@ -1,21 +1,21 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-18 02:49
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile ModelCommand.php
  */
 
-namespace Angujo\LaravelModel\Laravel;
+namespace Angujo\Elolara\Laravel;
 
 
-use Angujo\LaravelModel\Config;
+use Angujo\Elolara\Config;
 use Illuminate\Console\Command;
 
 /**
  * Class ModelCommand
  *
- * @package Angujo\LaravelModel\Laravel
+ * @package Angujo\Elolara\Laravel
  */
 class ModelCommand extends Command
 {

@@ -1,24 +1,24 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-27 16:59
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile MorphOne.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\RelationshipFunction;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Relations\MorphOne as LaravelMorphOne;
 
 /**
  * Class MorphOne
  *
- * @package Angujo\LaravelModel\Model\Relations
+ * @package Angujo\Elolara\Model\Relations
  */
 class MorphOne extends RelationshipFunction
 {

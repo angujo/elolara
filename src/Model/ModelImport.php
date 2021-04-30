@@ -1,20 +1,20 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-18 22:26
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile ModelImport.php
  */
 
-namespace Angujo\LaravelModel\Model;
+namespace Angujo\Elolara\Model;
 
 
-use Angujo\LaravelModel\Model\Traits\HasTemplate;
+use Angujo\Elolara\Model\Traits\HasTemplate;
 
 /**
  * Class ModelImport
  *
- * @package Angujo\LaravelModel\Model
+ * @package Angujo\Elolara\Model
  */
 class ModelImport
 {

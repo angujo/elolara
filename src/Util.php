@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-13 13:14
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile Util.php
  */
 
-namespace Angujo\LaravelModel;
+namespace Angujo\Elolara;
 
 
 /**
  * Class Util
  *
- * @package Angujo\LaravelModel
+ * @package Angujo\Elolara
  */
 class Util
 {

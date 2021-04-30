@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-12 14:13
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile HasComment.php
  */
 
-namespace Angujo\LaravelModel\Database\Traits;
+namespace Angujo\Elolara\Database\Traits;
 
 
 /**
  * Trait HasComment
  *
- * @package Angujo\LaravelModel\Database\Traits
+ * @package Angujo\Elolara\Database\Traits
  */
 trait HasComment
 {

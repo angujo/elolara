@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-16 11:32
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile DBPrimaryConstraint.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
 /**
  * Class DBPrimaryConstraint
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  *
  * @property string       $name
  * @property string       $table_name

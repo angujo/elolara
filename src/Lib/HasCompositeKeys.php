@@ -1,12 +1,12 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-30 04:09
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile HasCompositeKeys.php
  */
 
-namespace Angujo\LaravelModel\Lib;
+namespace Angujo\Elolara\Lib;
 
 
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
  * Trait HasCompositeKeys
  * @see https://stackoverflow.com/questions/31415213/how-i-can-put-composite-keys-in-models-in-laravel-5
  * Thanks to @mopo922 response and contribution
- * @package Angujo\LaravelModel\Lib
+ * @package Angujo\Elolara\Lib
  */
 trait HasCompositeKeys
 {

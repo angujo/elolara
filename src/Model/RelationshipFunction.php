@@ -1,27 +1,27 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-21 09:13
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile RelationshipFunction.php
  */
 
-namespace Angujo\LaravelModel\Model;
+namespace Angujo\Elolara\Model;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\Relations\RelationKeysInterface;
-use Angujo\LaravelModel\Model\Traits\HasTemplate;
-use Angujo\LaravelModel\Model\Traits\ImportsClass;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Relations\RelationKeysInterface;
+use Angujo\Elolara\Model\Traits\HasTemplate;
+use Angujo\Elolara\Model\Traits\ImportsClass;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Class RelationshipFunction
  *
- * @package Angujo\LaravelModel\Model
+ * @package Angujo\Elolara\Model
  */
 abstract class RelationshipFunction implements RelationKeysInterface
 {

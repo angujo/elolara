@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-13 10:01
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile BaseDBClass.php
  */
 
-namespace Angujo\LaravelModel\Database\Traits;
+namespace Angujo\Elolara\Database\Traits;
 
 
 /**
  * Class BaseDBClass
  *
- * @package Angujo\LaravelModel\Database\Traits
+ * @package Angujo\Elolara\Database\Traits
  */
 abstract class BaseDBClass
 {

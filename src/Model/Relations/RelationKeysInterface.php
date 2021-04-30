@@ -1,17 +1,17 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-24 18:46
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile RelationKeysInterface.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Database\DBTable;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Database\DBTable;
 
 interface RelationKeysInterface
 {

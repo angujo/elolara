@@ -1,24 +1,24 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-12 14:08
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile DBColumn.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\Traits\BaseDBClass;
-use Angujo\LaravelModel\Database\Traits\HasComment;
-use Angujo\LaravelModel\Database\Traits\HasName;
-use Angujo\LaravelModel\Util;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\Traits\BaseDBClass;
+use Angujo\Elolara\Database\Traits\HasComment;
+use Angujo\Elolara\Database\Traits\HasName;
+use Angujo\Elolara\Util;
 
 /**
  * Class DBColumn
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  *
  * @property string              $table_name
  * @property string              $name

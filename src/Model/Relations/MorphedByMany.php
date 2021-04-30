@@ -1,25 +1,25 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-27 19:42
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile MorphedByMany.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\RelationshipFunction;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as LaravelMorphToMany;
 
 /**
  * Class MorphedByMany
  *
- * @package Angujo\LaravelModel\Model\Relations
+ * @package Angujo\Elolara\Model\Relations
  */
 class MorphedByMany extends RelationshipFunction
 {

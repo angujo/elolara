@@ -19,7 +19,7 @@
       "src/helpers.php"
     ],
     "psr-4": {
-      "Angujo\\LaravelModel\\": "src/"
+      "Angujo\\Elolara\\": "src/"
     }
   },
   "require-dev": {
@@ -27,10 +27,10 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Angujo\\LaravelModel\\Laravel\\LaravelModelServiceProvider"
+        "Angujo\\Elolara\\Laravel\\ElolaraServiceProvider"
       ],
       "aliases": {
-        "LaravelModel": "Angujo\\LaravelModel\\Laravel\\Factory"
+        "Elolara": "Angujo\\Elolara\\Laravel\\Factory"
       }
     }
   }

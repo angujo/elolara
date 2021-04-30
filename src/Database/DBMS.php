@@ -1,12 +1,12 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-17 03:26
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile DBMS.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
 use Illuminate\Database\ConnectionInterface;
@@ -15,7 +15,7 @@ use Illuminate\Database\Query\JoinClause;
 /**
  * Class DBMS
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  */
 class DBMS
 {

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-17 09:11
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile config.php
  */
@@ -13,8 +13,8 @@
  * Any subsequent extension or supporting directories will be set deeper into "base_dir"
  */
 
-use Angujo\LaravelModel\Lib\UsesAccessor;
-use Angujo\LaravelModel\Lib\UsesStaticAccessor;
+use Angujo\Elolara\Lib\UsesAccessor;
+use Angujo\Elolara\Lib\UsesStaticAccessor;
 use Illuminate\Database\Eloquent\Model;
 
 return [

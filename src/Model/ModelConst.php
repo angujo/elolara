@@ -1,24 +1,24 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-18 17:30
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile ModelProperty.php
  */
 
-namespace Angujo\LaravelModel\Model;
+namespace Angujo\Elolara\Model;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\Traits\HasTemplate;
-use Angujo\LaravelModel\Model\Traits\ImportsClass;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Traits\HasTemplate;
+use Angujo\Elolara\Model\Traits\ImportsClass;
 
 /**
  * Class ModelProperty
  *
- * @package Angujo\LaravelModel\Model
+ * @package Angujo\Elolara\Model
  */
 class ModelConst
 {

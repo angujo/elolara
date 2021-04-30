@@ -1,7 +1,7 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-17 08:07
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile constants.php
  */

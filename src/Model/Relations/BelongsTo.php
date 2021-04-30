@@ -1,24 +1,24 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-24 18:01
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile BelongsTo.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Model\RelationshipFunction;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Relations\BelongsTo as LaravelBelongsTo;
 
 /**
  * Class BelongsTo
  *
- * @package Angujo\LaravelModel\Model\Relations
+ * @package Angujo\Elolara\Model\Relations
  */
 class BelongsTo extends RelationshipFunction
 {

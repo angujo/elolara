@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-29 19:58
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile UsesStaticAccessor.php
  */
 
-namespace Angujo\LaravelModel\Lib;
+namespace Angujo\Elolara\Lib;
 
 
 /**
  * Trait UsesStaticAccessor
  *
- * @package Angujo\LaravelModel\Lib
+ * @package Angujo\Elolara\Lib
  */
 trait UsesStaticAccessor
 {

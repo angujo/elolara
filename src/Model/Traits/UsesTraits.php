@@ -1,20 +1,20 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-28 07:50
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile UsesTraits.php
  */
 
-namespace Angujo\LaravelModel\Model\Traits;
+namespace Angujo\Elolara\Model\Traits;
 
 
-use Angujo\LaravelModel\Model\ModelUses;
+use Angujo\Elolara\Model\ModelUses;
 
 /**
  * Trait UsesTraits
  *
- * @package Angujo\LaravelModel\Model\Traits
+ * @package Angujo\Elolara\Model\Traits
  */
 trait UsesTraits
 {

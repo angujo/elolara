@@ -1,23 +1,23 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-12 14:07
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile DBTable.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\Traits\BaseDBClass;
-use Angujo\LaravelModel\Database\Traits\HasComment;
-use Angujo\LaravelModel\Database\Traits\HasName;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\Traits\BaseDBClass;
+use Angujo\Elolara\Database\Traits\HasComment;
+use Angujo\Elolara\Database\Traits\HasName;
 
 /**
  * Class DBTable
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  *
  * @property string                      $name
  * @property boolean                     $is_pivot

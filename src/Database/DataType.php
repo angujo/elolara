@@ -1,21 +1,21 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-18 19:47
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile DataType.php
  */
 
-namespace Angujo\LaravelModel\Database;
+namespace Angujo\Elolara\Database;
 
 
-use Angujo\LaravelModel\Model\Traits\ImportsClass;
+use Angujo\Elolara\Model\Traits\ImportsClass;
 use Carbon\Carbon;
 
 /**
  * Class DataType
  *
- * @package Angujo\LaravelModel\Database
+ * @package Angujo\Elolara\Database
  *
  * @property boolean $isBool
  * @property boolean $isChar

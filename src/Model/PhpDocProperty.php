@@ -1,22 +1,22 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-17 08:00
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile PhpDocProperty.php
  */
 
-namespace Angujo\LaravelModel\Model;
+namespace Angujo\Elolara\Model;
 
 
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Model\Traits\HasTemplate;
-use Angujo\LaravelModel\Model\Traits\ImportsClass;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Model\Traits\HasTemplate;
+use Angujo\Elolara\Model\Traits\ImportsClass;
 
 /**
  * Class PhpDocProperty
  *
- * @package Angujo\LaravelModel\Model
+ * @package Angujo\Elolara\Model
  */
 class PhpDocProperty
 {

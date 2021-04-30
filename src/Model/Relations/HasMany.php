@@ -1,24 +1,24 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-24 19:35
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile hasMany.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Model\RelationshipFunction;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany as LaravelHasMany;
 
 /**
  * Class hasMany
  *
- * @package Angujo\LaravelModel\Model\Relations
+ * @package Angujo\Elolara\Model\Relations
  */
 class HasMany extends RelationshipFunction
 {

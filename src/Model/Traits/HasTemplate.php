@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-17 08:01
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile HasTemplate.php
  */
 
-namespace Angujo\LaravelModel\Model\Traits;
+namespace Angujo\Elolara\Model\Traits;
 
 
 /**
  * Class HasTemplate
  *
- * @package Angujo\LaravelModel\Model\Traits
+ * @package Angujo\Elolara\Model\Traits
  */
 trait HasTemplate
 {

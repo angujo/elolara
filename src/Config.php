@@ -1,12 +1,12 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-17 08:07
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile Config.php
  */
 
-namespace Angujo\LaravelModel;
+namespace Angujo\Elolara;
 
 
 use Illuminate\Contracts\Database\Eloquent\Castable;
@@ -18,7 +18,7 @@ use phpDocumentor\Reflection\Types\Boolean;
 /**
  * Class Config
  *
- * @package Angujo\LaravelModel
+ * @package Angujo\Elolara
  *
  * @method static boolean full_namespace_import(Boolean $value = null)
  * @method static boolean column_auto_relate(Boolean $value = null)
@@ -53,7 +53,7 @@ use phpDocumentor\Reflection\Types\Boolean;
 class Config
 {
     private static $me;
-    public const CONFIG_NAME         = 'laravelmodel';
+    public const CONFIG_NAME         = 'elolara';
     public const SCHEMAS_EXCLUDE     = ['mysql', 'sys', 'information_schema', 'master', 'template'];
     public const LARAVEL_CONSTANTS   = ['created_at', 'updated_at'];
     public const LARAVEL_ID          = 'id';

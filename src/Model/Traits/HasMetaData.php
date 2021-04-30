@@ -1,18 +1,18 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-29 18:36
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile HasMetaData.php
  */
 
-namespace Angujo\LaravelModel\Model\Traits;
+namespace Angujo\Elolara\Model\Traits;
 
 
 /**
  * Trait HasMetaData
  *
- * @package Angujo\LaravelModel\Model\Traits
+ * @package Angujo\Elolara\Model\Traits
  */
 trait HasMetaData
 {

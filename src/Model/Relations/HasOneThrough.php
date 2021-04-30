@@ -1,26 +1,26 @@
 <?php
 /**
  * @author       bangujo ON 2021-04-28 19:17
- * @project      laravelmodel
+ * @project      elolara
  * @ide          PhpStorm
  * @originalFile HasOneThrough.php
  */
 
-namespace Angujo\LaravelModel\Model\Relations;
+namespace Angujo\Elolara\Model\Relations;
 
 
-use Angujo\LaravelModel\Config;
-use Angujo\LaravelModel\Database\DBColumn;
-use Angujo\LaravelModel\Database\DBForeignConstraint;
-use Angujo\LaravelModel\Database\DBTable;
-use Angujo\LaravelModel\Model\RelationshipFunction;
-use Angujo\LaravelModel\Util;
+use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DBColumn;
+use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\RelationshipFunction;
+use Angujo\Elolara\Util;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough as LaravelHasOneThrough;
 
 /**
  * Class HasOneThrough
  *
- * @package Angujo\LaravelModel\Model\Relations
+ * @package Angujo\Elolara\Model\Relations
  */
 class HasOneThrough extends RelationshipFunction
 {
