@@ -75,11 +75,11 @@ class Factory
 
     protected function prepareDirs()
     {
-        if (!file_exists($cd = Config::extensions_dir())) mkdir($cd);
-        if (!is_writable($cd)) throw new \Exception("'{$cd}' is not writeable!");
-
         if (!file_exists($md = Config::models_dir())) mkdir($md);
         if (!is_writable($md)) throw new \Exception("'{$md}' is not writeable!");
+
+        if (!file_exists($cd = Config::extensions_dir())) mkdir($cd);
+        if (!is_writable($cd)) throw new \Exception("'{$cd}' is not writeable!");
 
         if (Config::base_abstract()) {
             if (!file_exists($dir = Config::abstracts_dir()) || !is_dir($dir)) mkdir($dir);
@@ -189,11 +189,16 @@ class Factory
         file_put_contents($path, (string)$model);
     }
 
+    /**
+     * Set the parent Model for all
+     * We'll always overwrite depending on config changes.
+     * If user want's to update, then a custom file can be set as model_class in config
+     * Parent changes can be pushed there.
+     */
     protected function writeCoreModel()
     {
         $model = CoreModel::load();
         $path  = Config::extensions_dir().$model->name.'.php';
-        if (file_exists($path)) return;
         file_put_contents($path, (string)$model);
     }
 }
