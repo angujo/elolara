@@ -37,7 +37,8 @@ class ModelProperty
 
     public static function forPrimaryKey(DBTable $table)
     {
-        if ((!($primary = $table->primary_column) && blank($table->primary_columns)) || ($primary && 0 === strcasecmp(Config::LARAVEL_ID, $primary->name))) {
+        if ((Config::composite_keys() && !($primary = $table->primary_column) && blank($table->primary_columns)) ||
+            (($primary = $primary ?? $table->primary_column) && 0 === strcasecmp(Config::LARAVEL_ID, $primary->name))) {
             return null;
         }
         $me         = new self();

@@ -122,7 +122,9 @@ return [
     'base_dir'                => app_path('Models'),
     /*
      * Enable composite keys in laravel
-     * Currently not supported
+     * Currently on testing
+     * Allows usage of Model::find($arr=[]) and multiple pri keys
+     * If you find yourself using this, reconsider your DB structure
      */
     'composite_keys'          => true,
     /*
