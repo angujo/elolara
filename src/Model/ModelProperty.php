@@ -12,6 +12,7 @@ namespace Angujo\LaravelModel\Model;
 use Angujo\LaravelModel\Config;
 use Angujo\LaravelModel\Database\DBColumn;
 use Angujo\LaravelModel\Database\DBTable;
+use Angujo\LaravelModel\Lib\HasCompositeKeys;
 use Angujo\LaravelModel\Model\Traits\HasTemplate;
 use Angujo\LaravelModel\Model\Traits\ImportsClass;
 use Angujo\LaravelModel\Model\Traits\UsesTraits;
@@ -24,7 +25,7 @@ use Angujo\LaravelModel\Model\Traits\UsesTraits;
  */
 class ModelProperty
 {
-    use HasTemplate, ImportsClass,UsesTraits;
+    use HasTemplate, ImportsClass, UsesTraits;
 
     protected $template_name = 'property';
 
@@ -36,14 +37,15 @@ class ModelProperty
 
     public static function forPrimaryKey(DBTable $table)
     {
-        if (!($primary = $table->primary_column) || 0 === strcasecmp(Config::LARAVEL_ID, $primary->name)) {
+        if ((!($primary = $table->primary_column) && blank($table->primary_columns)) || ($primary && 0 === strcasecmp(Config::LARAVEL_ID, $primary->name))) {
             return null;
         }
         $me         = new self();
-        $me->var    = '* @var string';
+        $me->var    = '* @var '.($primary ? 'string' : 'array');
         $me->access = 'protected';
         $me->name   = 'primaryKey';
-        $me->value  = "'{$primary->name}'";
+        $me->value  = $primary ? var_export($primary->name, true) : array_export(array_values(array_map(function(DBColumn $col){ return $col->name; }, $table->primary_columns)));
+        if (!$primary) $me->addTrait(HasCompositeKeys::class);
         return $me;
     }
 

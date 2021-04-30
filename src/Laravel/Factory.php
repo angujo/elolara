@@ -85,7 +85,6 @@ class Factory
             if (!file_exists($dir = Config::abstracts_dir()) || !is_dir($dir)) mkdir($dir);
             if (!is_writable($dir)) throw new \Exception("'{$dir}' is not writeable!");
         }
-        print_r([Config::models_dir(), Config::abstracts_dir()]);
     }
 
     private function oneThroughRelations()

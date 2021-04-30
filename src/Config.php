@@ -90,6 +90,16 @@ class Config
         return array_unique(array_merge([self::LARAVEL_TS_CREATED, self::LARAVEL_TS_UPDATED], self::create_columns(), self::update_columns()));
     }
 
+    public static function timestamp_create_names()
+    {
+        return array_unique(array_merge([self::LARAVEL_TS_CREATED,], self::create_columns()));
+    }
+
+    public static function timestamp_update_names()
+    {
+        return array_unique(array_merge([self::LARAVEL_TS_UPDATED,], self::update_columns()));
+    }
+
     /**
      * @param $schema_name
      *

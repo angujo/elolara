@@ -34,7 +34,7 @@ class ModelConst
 
     public static function fromColumn(DBColumn $column, ?string $name = null)
     {
-        if (in_array(($name?:$column->name), Config::LARAVEL_CONSTANTS)) {
+        if (in_array($column->name, Config::LARAVEL_CONSTANTS)) {
             return null;
         }
         $me         = new self();
@@ -43,17 +43,14 @@ class ModelConst
         $me->name   = strtoupper(\Str::slug(((string)Config::constant_column_prefix()).($name ?: $column->name), '_'));
         $me->value  = "'{$column->name}'";
         $me->addImport($column->data_type->imports());
-        // $imports = array_merge($imports, $me->imports());
         return $me;
     }
 
     public static function forTimestamps(DBTable $table)
     {
         $outs = [null, null];
-        if (1 != count($created = array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, array_merge([Config::LARAVEL_TS_CREATED], Config::create_columns())); }))) {
-            return $outs;
-        }
-        if (1 != count($updated = array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, array_merge([Config::LARAVEL_TS_UPDATED], Config::update_columns())); }))) {
+        if (1 != count($created = array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, Config::timestamp_create_names()); })) ||
+            1 != count($updated = array_filter($table->columns, function(DBColumn $c){ return in_array($c->name, Config::timestamp_update_names()); }))) {
             return $outs;
         }
         /** @var DBColumn $created */

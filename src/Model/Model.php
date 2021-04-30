@@ -69,6 +69,7 @@ class Model
         if (!empty($this->traits)) {
             $this->uses = 'use '.implode(',', array_map('basename', $this->traits())).';';
         }
+       // print_r($this->_constants);
     }
 
     public static function fromTable(DBTable $table, bool $for_base = null)
@@ -115,7 +116,13 @@ class Model
             $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column, $this->_imports);
         }
         $this->_properties[] = ModelProperty::forTableName($this->table);
-        $this->_properties[] = ModelProperty::forPrimaryKey($this->table);
+
+        $this->_properties[] = $prKeys = ModelProperty::forPrimaryKey($this->table);
+        if ($prKeys) {
+            $this->addTrait($prKeys->traits());
+            $this->addImport($prKeys->imports());
+        }
+
         $this->_properties[] = ModelProperty::forIncrementing($this->table);
         $this->_properties[] = ModelProperty::forKeyType($this->table);
         $this->_properties[] = ModelProperty::forTimestamps($this->table);

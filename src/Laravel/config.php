@@ -13,6 +13,8 @@
  * Any subsequent extension or supporting directories will be set deeper into "base_dir"
  */
 
+use Angujo\LaravelModel\Lib\UsesAccessor;
+use Angujo\LaravelModel\Lib\UsesStaticAccessor;
 use Illuminate\Database\Eloquent\Model;
 
 return [
@@ -190,7 +192,7 @@ return [
      * Enter traits here used by all models.
      * Full path(FQDN) should be used
      */
-    'traits'                  => ['Angujo\LaravelModel\Lib\UsesAccessor', 'Angujo\LaravelModel\Lib\UsesStaticAccessor'],
+    'traits'                  => [UsesAccessor::class, UsesStaticAccessor::class,],
     /*
      * If handling multiple schema/DBs and there's need to separate schema configurations,
      * Use below with options above to be replaced.
