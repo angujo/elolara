@@ -15,6 +15,7 @@ use Angujo\Elolara\Database\DBMS;
 use Angujo\Elolara\Database\DBTable;
 use Angujo\Elolara\Model\CoreModel;
 use Angujo\Elolara\Model\Model;
+use Angujo\Elolara\Model\SchemaModel;
 use Illuminate\Database\ConnectionInterface;
 
 /**
@@ -51,11 +52,18 @@ class Factory
 
     public function runSchema()
     {
-        $dbms   = new DBMS($this->connection);
-        $schema = $dbms->loadSchema();
+        $dbms = new DBMS($this->connection);
+
+        $schema = $dbms->getSchema()
+                       ->setExcludedTables(...\Arr::wrap(Config::excluded_tables()))
+                       ->setOnlyTables(...\Arr::wrap(Config::only_tables()));
+
+        $dbms->loadSchema();
 
         $this->prepareDirs();
         $this->writeCoreModel();
+
+        if (Config::db_directories()) $this->writeSchemaModel();
 
         $this->tablesPivotRelations($schema);
         $morphs      = $this->tablesMorphRelations($schema);
@@ -195,6 +203,13 @@ class Factory
      * If user want's to update, then a custom file can be set as model_class in config
      * Parent changes can be pushed there.
      */
+    protected function writeSchemaModel()
+    {
+        $model = SchemaModel::load();
+        $path  = Config::extensions_dir().$model->name.'.php';
+        file_put_contents($path, (string)$model);
+    }
+
     protected function writeCoreModel()
     {
         $model = CoreModel::load();

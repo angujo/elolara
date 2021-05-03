@@ -28,6 +28,9 @@ use Illuminate\Database\Query\JoinClause;
  */
 class DatabaseSchema extends BaseDBClass
 {
+    public $excluded_tables = [];
+    public $only_tables     = [];
+
     public function __construct($name)
     {
         parent::__construct(['name' => $name]);
@@ -60,7 +63,7 @@ class DatabaseSchema extends BaseDBClass
         if ($column_name && is_string($column_name)) {
             return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
         }
-        return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) ; });
+        return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name); });
     }
 
     /**
@@ -146,6 +149,18 @@ class DatabaseSchema extends BaseDBClass
     public function setForeignConstraints(array $data)
     {
         $this->_setProp('foreign_constraints', $data);
+        return $this;
+    }
+
+    public function setExcludedTables(string ...$tables)
+    {
+        $this->excluded_tables = array_unique(array_filter(array_merge($this->excluded_tables, func_get_args()), 'is_string'));
+        return $this;
+    }
+
+    public function setOnlyTables(string ...$tables)
+    {
+        $this->only_tables = array_unique(array_filter(array_merge($this->only_tables, func_get_args()), 'is_string'));
         return $this;
     }
 }

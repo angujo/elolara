@@ -34,6 +34,8 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string[]|array only_tables($value = null)
  * @method static string[]|array relation_naming($value = null)
  * @method static string[]|array core_traits()
+ * @method static string[]|array schema_traits()
+ * @method static string[]|array table_traits()
  * @method static string[]|array table_configs($value = null)
  * @method static string relation_remove_prx($value = null)
  * @method static string relation_remove_sfx($value = null)
@@ -114,6 +116,8 @@ class Config
         $schema                            = (self::$me ?? (self::$me = new self()))->values['schemas'][$schema_name] ?? [];
         self::$me->values['table_configs'] = $schema['tables'] ?? [];
         self::$me->values['schema_name']   = $schema_name;
+        self::$me->values['schema_traits'] = array_filter(\Arr::wrap($schema['traits'] ?? []));
+        self::$me->values['table_traits']  = array_map(function($tbl){ return \Arr::wrap($tbl['traits'] ?? []); }, array_filter(\Arr::wrap($schema['tables'] ?? [])));
         unset(self::$me->values['schemas']);
         self::$me->values = array_replace(self::$me->values, $schema);
         self::$me->cleanCasts();
@@ -154,6 +158,11 @@ class Config
         return Util::className(LM_APP_NAME.'_model');
     }
 
+    public static function schema_model_name()
+    {
+        return Util::className(Config::schema_name().'_model');
+    }
+
     public static function extensions_dir()
     {
         return self::base_dir().self::extension_ns().DIRECTORY_SEPARATOR;
@@ -167,6 +176,11 @@ class Config
     public static function super_model_fqdn()
     {
         return self::namespace().'\\'.self::extension_ns().'\\'.self::super_model_name();
+    }
+
+    public static function schema_model_fqdn()
+    {
+        return self::namespace().'\\'.self::extension_ns().'\\'.self::schema_model_name();
     }
 
     public static function abstracts_namespace()

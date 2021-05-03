@@ -83,14 +83,20 @@ class Model
             $me->template_name = 'abstract-model';
             $me->namespace     = Config::abstracts_namespace();
             $me->name          = Util::baseClassName($table->name);
-            $me->parent        = basename(Config::super_model_name());
             $me->child         = Util::className($table->name);
-            $me->addImport(Config::super_model_fqdn());
+            if (Config::db_directories()) {
+                $me->parent = basename(Config::schema_model_name());
+                $me->addImport(Config::schema_model_fqdn());
+            } else {
+                $me->parent = basename(Config::super_model_name());
+                $me->addImport(Config::super_model_fqdn());
+            }
         } elseif (false === $for_base) {
             $me->addImport($pns = Config::abstracts_namespace().'\\'.Util::baseClassName($table->name));
             $me->parent = basename($pns);
         }
         if (false !== $for_base) {
+            $me->addTrait(...\Arr::wrap(Config::table_traits()[$table->name] ?? []));
             $me->processTable();
         }
         return $me;
