@@ -12,6 +12,7 @@ namespace Angujo\Elolara\Model\Relations;
 use Angujo\Elolara\Config;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Relations\BelongsTo as LaravelBelongsTo;
 
@@ -25,7 +26,7 @@ class BelongsTo extends RelationshipFunction
 
     public function __construct(string $model_class){ parent::__construct(LaravelBelongsTo::class, $model_class); }
 
-    public static function fromForeignKey(DBForeignConstraint $foreignKey, $model_class)
+    public static function fromForeignKey(DBForeignConstraint $foreignKey, Model $model)
     {
         if (!($name = self::relationName($foreignKey))) {
             return null;
@@ -33,22 +34,23 @@ class BelongsTo extends RelationshipFunction
         if (0 === strcasecmp(class_name($name), class_name($foreignKey->table->name))) {
             $name = $foreignKey->column->relation_name_singular;
         }
-        $me                     = new self($model_class);
+        $me                     = new self($model->name);
         $me->_relations[]       = $foreignKey->referenced_table->fqdn;
         $me->data_types[]       = $foreignKey->referenced_table->class_name;
         $me->is_nullable        = $foreignKey->column->is_nullable;
         $me->name               = $name;
         $me->phpdoc_description = "* Relation method to get {$foreignKey->referenced_table->class_name} referenced by {$foreignKey->column_name}";
         $me->keyRelations($foreignKey);
+        $me->addImport(...$me->_relations);
         $me->autoload();
 
-        return $me;
+        return $model->setFunction($me);
     }
 
-    public static function fromColumn(DBColumn $column, $model_class)
+    public static function fromColumn(DBColumn $column, Model $model)
     {
         $name = $column->relation_name_singular;
-        $me   = new self($model_class);
+        $me   = new self($model->name);
 
         $me->_relations[]       = $column->probable_table->fqdn;
         $me->data_types[]       = $column->probable_table->class_name;
@@ -57,8 +59,10 @@ class BelongsTo extends RelationshipFunction
         $me->phpdoc_description = "* Relation method to get {$column->probable_table->class_name} referenced by {$column->name}\n* Probable Relation";
         $me->keyRelations($column);
         $me->autoload();
+        $model->addImport(...$me->imports());
+        $model->setPhpDocProperty($me);
 
-        return $me;
+        return $model->setFunction($me);;
     }
 
 

@@ -12,6 +12,7 @@ namespace Angujo\Elolara\Model\Relations;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Relations\MorphOne as LaravelMorphOne;
 
@@ -29,11 +30,11 @@ class MorphOne extends RelationshipFunction
      * @param DBTable $morphTable
      * @param string  $model_class
      *
-     * @return MorphOne
+     * @return MorphOne|RelationshipFunction
      */
-    public static function fromTable(string $name, DBTable $morphTable, string $model_class)
+    public static function fromTable(string $name, DBTable $morphTable, Model $model)
     {
-        $me                     = new self($model_class);
+        $me                     = new self($model->name);
         $me->is_nullable        = true;
         $me->_relations[]       = $morphTable->fqdn;
         $me->data_types[]       = $morphTable->class_name;
@@ -42,7 +43,7 @@ class MorphOne extends RelationshipFunction
         $me->keys               = var_export($name, true);
         $me->autoload();
 
-        return $me;
+        return  $model->setFunction($me);
     }
 
     /**

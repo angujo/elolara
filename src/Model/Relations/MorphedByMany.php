@@ -12,6 +12,7 @@ namespace Angujo\Elolara\Model\Relations;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as LaravelMorphToMany;
@@ -31,11 +32,11 @@ class MorphedByMany extends RelationshipFunction
      * @param DBTable  $endTable
      * @param string   $model_class
      *
-     * @return MorphedByMany
+     * @return MorphedByMany|self|RelationshipFunction
      */
-    public static function fromTable(string $name, DBColumn $morphColumn, DBTable $endTable, string $model_class)
+    public static function fromTable(string $name, DBColumn $morphColumn, DBTable $endTable, Model $model)
     {
-        $me                     = new self($model_class);
+        $me                     = new self($model->name);
         $me->_relations[]       = $endTable->fqdn;
         $me->data_types[]       = $endTable->class_name.'[]';
         $me->data_types[]       = basename(Collection::class);
@@ -45,7 +46,7 @@ class MorphedByMany extends RelationshipFunction
         $me->addImport(Collection::class);
         $me->autoload();
 
-        return $me;
+        return  $model->setFunction($me);
     }
 
     /**

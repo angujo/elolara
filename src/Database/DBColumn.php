@@ -57,7 +57,9 @@ class DBColumn extends BaseDBClass
 
     protected function probable_table()
     {
-        return ($this->foreign_key || !($table = $this->db->getRelatableTable(preg_replace(Config::column_relation_regex(), '$1', $this->name), $this->name))) ? null : $table;
+        /** @var DBTable $table */
+        return ($this->foreign_key || !($table = $this->db->getRelatableTable(preg_replace(Config::column_relation_regex(), '$1', $this->name), $this->name)) ||
+            !$table->primary_column || 0 !== strcasecmp($this->data_type->phpName(), $table->primary_column->data_type->phpName())) ? null : $table;
     }
 
     protected function relation_name_singular()

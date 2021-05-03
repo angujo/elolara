@@ -28,7 +28,7 @@ class PhpDocProperty
     public $name;
     public $description;
 
-    public static function fromColumn(DBColumn $column, &$imports = [])
+    public static function fromColumn(DBColumn $column)
     {
         $me               = new self();
         $me->name         = $column->name;
@@ -38,7 +38,6 @@ class PhpDocProperty
             $me->data_types[] = 'null';
         }
         $me->addImport($column->data_type->imports());
-        $imports = array_merge($imports, $me->imports());
         return $me;
     }
 

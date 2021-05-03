@@ -70,7 +70,7 @@ class DBTable extends BaseDBClass
 
     protected function fqdn()
     {
-        return Config::namespace().'\\'.class_name($this->name);
+        return Config::models_namespace().'\\'.class_name($this->name);
     }
 
     protected function class_name()

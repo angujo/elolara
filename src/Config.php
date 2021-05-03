@@ -34,6 +34,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string[]|array only_tables($value = null)
  * @method static string[]|array relation_naming($value = null)
  * @method static string[]|array core_traits()
+ * @method static string[]|array table_configs($value = null)
  * @method static string relation_remove_prx($value = null)
  * @method static string relation_remove_sfx($value = null)
  * @method static string model_class($value = null)
@@ -46,6 +47,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string namespace($value = null)
  * @method static string base_abstract_prefix($value = null)
  * @method static string pivot_name_regex($value = null)
+ * @method static string schema_name()
  * @method static string column_relation_pattern($value = null)
  * @method static string[]|array has_one_through($value = null)
  * @method static string[]|array has_many_through($value = null)
@@ -53,7 +55,6 @@ use phpDocumentor\Reflection\Types\Boolean;
 class Config
 {
     private static $me;
-    public const CONFIG_NAME         = 'elolara';
     public const SCHEMAS_EXCLUDE     = ['mysql', 'sys', 'information_schema', 'master', 'template'];
     public const LARAVEL_CONSTANTS   = ['created_at', 'updated_at'];
     public const LARAVEL_ID          = 'id';
@@ -68,7 +69,9 @@ class Config
 
     protected function __construct()
     {
-        $this->values = array_replace($this->defaults(), $this->user());
+        $this->values                = array_replace($this->defaults(), $this->user());
+        $this->values['schema_name'] = null;
+        $this->values['base_dir']    = preg_replace(['/\\$/', '/\/$/'], '', $this->values['base_dir'] ?? app_path('Models')).DIRECTORY_SEPARATOR;
         $this->setCoreTraits();
         $this->cleanCasts();
         $this->values['overwrite_models'] = false;
@@ -105,10 +108,12 @@ class Config
      *
      * @return Config
      */
-    public static function schemaConfig($schema_name)
+    public static function schemaConfig(string $schema_name)
     : Config
     {
-        $schema = (self::$me ?? (self::$me = new self()))->values['schemas'][$schema_name] ?? [];
+        $schema                            = (self::$me ?? (self::$me = new self()))->values['schemas'][$schema_name] ?? [];
+        self::$me->values['table_configs'] = $schema['tables'] ?? [];
+        self::$me->values['schema_name']   = $schema_name;
         unset(self::$me->values['schemas']);
         self::$me->values = array_replace(self::$me->values, $schema);
         self::$me->cleanCasts();
@@ -120,9 +125,14 @@ class Config
         return (self::$me ?? new self())->values;
     }
 
+    protected static function db_dir_extension($sfx = null)
+    {
+        return !self::db_directories() || (self::db_directories() && !self::schema_name()) ? '' : ucfirst(\Str::camel(self::schema_name())).$sfx;
+    }
+
     public static function models_dir()
     {
-        return preg_replace(['/\\$/', '/\/$/'], '', self::base_dir()).DIRECTORY_SEPARATOR;
+        return self::base_dir().self::db_dir_extension(DIRECTORY_SEPARATOR);
     }
 
     public static function abstracts_prefix()
@@ -146,7 +156,7 @@ class Config
 
     public static function extensions_dir()
     {
-        return self::models_dir().self::extension_ns().DIRECTORY_SEPARATOR;
+        return self::base_dir().self::extension_ns().DIRECTORY_SEPARATOR;
     }
 
     public static function extension_namespace()
@@ -161,7 +171,17 @@ class Config
 
     public static function abstracts_namespace()
     {
-        return self::namespace().'\\'.self::abstracts_prefix();
+        return self::schema_namespace('\\').self::abstracts_prefix();
+    }
+
+    public static function schema_namespace($sfx = null)
+    {
+        return self::namespace().(($sns = self::db_dir_extension($sfx)) ? "\\{$sns}" : '');
+    }
+
+    public static function models_namespace()
+    {
+        return self::schema_namespace();
     }
 
     public static function abstracts_dir()

@@ -13,6 +13,7 @@ use Angujo\Elolara\Config;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as LaravelBelongsToMany;
@@ -24,13 +25,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany as LaravelBelongsToMany
  */
 class BelongsToMany extends RelationshipFunction
 {
-    public function __construct($modelClass){ parent::__construct(LaravelBelongsToMany::class, $modelClass); }
+    public function __construct($modelClass){ parent::__construct(LaravelBelongsToMany::class,$modelClass); }
 
-    public static function fromTable(DBTable $table, $model_class)
+    public static function fromTable(DBTable $table,Model $model)
     {
 
         $name             = $table->pivot_end_table->relation_name_plural;
-        $me               = new self($model_class);
+        $me               = new self($model->name);
         $me->_relations[] = $table->pivot_end_table->fqdn;
         $me->data_types[] = $table->pivot_end_table->class_name.'[]';
         $me->data_types[] = basename(Collection::class);
@@ -43,7 +44,7 @@ class BelongsToMany extends RelationshipFunction
         $me->pivotColumns($table);
         $me->autoload();
 
-        return $me;
+        return  $model->setFunction($me);
     }
 
     /**

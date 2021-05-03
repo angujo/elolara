@@ -75,14 +75,14 @@ class Factory
 
     protected function prepareDirs()
     {
-        if (!file_exists($md = Config::models_dir())) mkdir($md);
+        if (!file_exists($md = Config::models_dir())) mkdir($md, 0777, true);
         if (!is_writable($md)) throw new \Exception("'{$md}' is not writeable!");
 
-        if (!file_exists($cd = Config::extensions_dir())) mkdir($cd);
+        if (!file_exists($cd = Config::extensions_dir())) mkdir($cd, 0777, true);
         if (!is_writable($cd)) throw new \Exception("'{$cd}' is not writeable!");
 
         if (Config::base_abstract()) {
-            if (!file_exists($dir = Config::abstracts_dir()) || !is_dir($dir)) mkdir($dir);
+            if (!file_exists($dir = Config::abstracts_dir()) || !is_dir($dir)) mkdir($dir, 0777, true);
             if (!is_writable($dir)) throw new \Exception("'{$dir}' is not writeable!");
         }
     }

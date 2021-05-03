@@ -12,6 +12,7 @@ namespace Angujo\Elolara\Model\Relations;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Relations\MorphTo as LaravelMorphTo;
 use phpDocumentor\Reflection\Types\Boolean;
@@ -31,11 +32,11 @@ class MorphTo extends RelationshipFunction
      * @param array|DBTable[] $tables
      * @param bool            $nullable
      *
-     * @return MorphTo
+     * @return MorphTo|RelationshipFunction
      */
-    public static function fromTable(string $name, string $model_class, array $tables,bool $nullable = false)
+    public static function fromTable(string $name, Model $model, array $tables, bool $nullable = false)
     {
-        $me = new self($model_class);
+        $me              = new self($model->name);
         $me->is_nullable = $nullable;
         foreach ($tables as $table) {
             $me->data_types[]        = $table->class_name;
@@ -45,7 +46,7 @@ class MorphTo extends RelationshipFunction
         $me->phpdoc_description = "* MorphTo method for the models ".implode(', ', $me->data_types);
         $me->autoload();
 
-        return $me;
+        return  $model->setFunction($me);
     }
 
     /**

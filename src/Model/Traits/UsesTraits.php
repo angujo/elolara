@@ -20,7 +20,7 @@ trait UsesTraits
 {
     protected $traits = [];
 
-    protected function addTrait(...$imports)
+    public function addTrait(...$imports)
     {
         $trait = array_filter(array_map(function($i){ return is_string($i) ? $i : null; }, \Arr::flatten(func_get_args())),'trait_exists');
         if (method_exists($this, 'addImport')) $this->addImport(...$trait);

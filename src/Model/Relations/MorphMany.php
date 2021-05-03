@@ -12,6 +12,7 @@ namespace Angujo\Elolara\Model\Relations;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphMany as LaravelMorphMany;
@@ -23,18 +24,18 @@ use Illuminate\Database\Eloquent\Relations\MorphMany as LaravelMorphMany;
  */
 class MorphMany extends RelationshipFunction
 {
-    public function __construct(string $model_class){ parent::__construct(LaravelMorphMany::class, $model_class); }
+    public function __construct(string $model_class){ parent::__construct(LaravelMorphMany::class,$model_class); }
 
     /**
      * @param string  $name
      * @param DBTable $morphTable
      * @param string  $model_class
      *
-     * @return MorphMany
+     * @return MorphMany|RelationshipFunction
      */
-    public static function fromTable(string $name, DBTable $morphTable, string $model_class)
+    public static function fromTable(string $name, DBTable $morphTable, Model $model)
     {
-        $me                     = new self($model_class);
+        $me                     = new self($model->name);
         $me->_relations[]       = $morphTable->fqdn;
         $me->data_types[]       = $morphTable->class_name.'[]';
         $me->data_types[]       = basename(Collection::class);
@@ -44,7 +45,7 @@ class MorphMany extends RelationshipFunction
         $me->addImport(Collection::class);
         $me->autoload();
 
-        return $me;
+        return  $model->setFunction($me);
     }
 
     /**

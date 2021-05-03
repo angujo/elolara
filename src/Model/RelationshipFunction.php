@@ -13,6 +13,7 @@ use Angujo\Elolara\Config;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Relations\HasMany;
 use Angujo\Elolara\Model\Relations\RelationKeysInterface;
 use Angujo\Elolara\Model\Traits\HasTemplate;
 use Angujo\Elolara\Model\Traits\ImportsClass;
@@ -71,6 +72,32 @@ abstract class RelationshipFunction implements RelationKeysInterface
         $this->addImport(...array_filter($relations, function($cl){
             return 0 !== strcasecmp(basename($cl), $this->model_class) && (Config::full_namespace_import() || Config::base_abstract() || (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
         }));
+    }
+
+    /**
+     * @param Model                        $model
+     * @param DBColumn|DBForeignConstraint $relation
+     * @param DBTable|null                 $parentTable
+     * @param DBTable|null                 $endTable
+     */
+    protected function columnarRelationName(Model $model, $relation, DBTable $parentTable = null, DBTable $endTable = null)
+    {
+        if (!is_object($relation) || !(is_a($relation, DBColumn::class) || is_a($relation, DBForeignConstraint::class))) {
+            return null;
+        }
+        switch (static::class) {
+            case Relations\HasOne::class:
+                if (in_array($relation->column_name, [\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID, $relation->referenced_table->foreign_column_name])) {
+                    return function_name_single($relation->table_name);
+                }
+                return function_name_single(preg_replace(['/'.$relation->referenced_table->foreign_column_name.'$/', '/'.\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID.'$/'], '', $relation->column_name).'_'.$relation->table_name);
+            case HasMany::class:
+                if (in_array($relation->column_name, [\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID, $relation->referenced_table->foreign_column_name])) {
+                    return $relation->table->relation_name_plural;
+                }
+                return function_name_plural(preg_replace(['/'.$relation->referenced_table->foreign_column_name.'$/', '/'.\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID.'$/'], '', $relation->column_name).'_'.$relation->table_name);
+        }
+        return null;
     }
 
     public static function relationName(DBForeignConstraint $constraint, array &$loads = [], bool $reference = false, $singular = true)

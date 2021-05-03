@@ -57,11 +57,13 @@ if (!function_exists('class_name')) {
 if (!function_exists('array_combination')) {
     function array_combination(array $array)
     {
-        $results = [[]];
+        $results = [];
 
-        foreach ($array as $element) {
-            foreach ($results as $combination) {
-                array_push($results, array_merge([$element], $combination));
+        foreach ($array as $x) {
+            foreach ($array as $y) {
+                foreach ($array as $z) {
+                    $results[] = [$x, $y, $z];
+                }
             }
         }
 

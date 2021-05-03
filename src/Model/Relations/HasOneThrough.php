@@ -13,6 +13,7 @@ use Angujo\Elolara\Config;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\RelationshipFunction;
 use Angujo\Elolara\Util;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough as LaravelHasOneThrough;
@@ -26,14 +27,14 @@ class HasOneThrough extends RelationshipFunction
 {
     public function __construct(string $model_class){ parent::__construct(LaravelHasOneThrough::class, $model_class); }
 
-    public static function fromTables(DBTable $primaryTable, DBTable $pivotTable, DBTable $endTable, $model_class)
+    public static function fromTables(DBTable $primaryTable, DBTable $pivotTable, DBTable $endTable,Model $model)
     {
         $pri_column = $primaryTable->primary_column;
         $piv_column = $pivotTable->relationColumn($primaryTable);
         $end_column = $endTable->relationColumn($pivotTable);
         if (!$pri_column || !$piv_column || !$end_column) return null;
 
-        $me                     = new self($model_class);
+        $me                     = new self($model->name);
         $me->name               = function_name_single($pivotTable->name).Util::className($endTable->name);
         $me->_relations[]       = $endTable->fqdn;
         $me->_relations[]       = $pivotTable->fqdn;
@@ -44,7 +45,7 @@ class HasOneThrough extends RelationshipFunction
         $me->keys = relation_keys([$primaryTable->foreign_column_name, $piv_column->name], [$pivotTable->foreign_column_name, $end_column->name], [Config::LARAVEL_ID, $pri_column->name], [Config::LARAVEL_ID, $pivotTable->primary_column->name]);
         $me->autoload();
 
-        return $me;
+        return  $model->setFunction($me);
     }
 
     /**

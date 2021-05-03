@@ -69,13 +69,13 @@ class Model
         if (!empty($this->traits)) {
             $this->uses = 'use '.implode(',', array_map('basename', $this->traits())).';';
         }
-       // print_r($this->_constants);
     }
 
     public static function fromTable(DBTable $table, bool $for_base = null)
+    : Model
     {
         $me             = new self($table);
-        $me->namespace  = Config::namespace();
+        $me->namespace  = Config::models_namespace();
         $me->name       = Util::className($table->name);
         $me->base_model = $for_base;
         if (true === $for_base) {
@@ -113,7 +113,7 @@ class Model
                     $this->addImport(...$const->imports());
                 }
             }
-            $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column, $this->_imports);
+            $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column);
         }
         $this->_properties[] = ModelProperty::forTableName($this->table);
 
@@ -204,23 +204,17 @@ class Model
 
     protected function hasManyThrough(DBTable $pTable, DBTable $eTable)
     {
-        $this->_functions[] = $morph_to = HasManyThrough::fromTables($this->table, $pTable, $eTable, $this->name);
-        $this->addImport(...$morph_to->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_to);
+        HasManyThrough::fromTables($this->table, $pTable, $eTable, $this);
     }
 
     protected function hasOneThrough(DBTable $pTable, DBTable $eTable)
     {
-        $this->_functions[] = $morph_to = HasOneThrough::fromTables($this->table, $pTable, $eTable, $this->name);
-        $this->addImport(...$morph_to->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_to);
+        HasOneThrough::fromTables($this->table, $pTable, $eTable, $this);
     }
 
     protected function morphToFromMT($name, array $tables)
     {
-        $this->_functions[] = $morph_to = MorphTo::fromTable($name, $this->name, $tables, $this->table->nullableMorphTo($name));
-        $this->addImport(...$morph_to->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_to);
+        MorphTo::fromTable($name, $this, $tables, $this->table->nullableMorphTo($name));
     }
 
     protected function morphToManyFromMM(string $name, DBTable $morphTable)
@@ -234,9 +228,7 @@ class Model
             if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) {
                 continue;
             }
-            $this->_functions[] = $morph_many = MorphToMany::fromTable($name, $column, $_table, $this->name);
-            $this->addImport(...$morph_many->imports());
-            $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_many);
+            MorphToMany::fromTable($name, $column, $_table, $this);
         }
     }
 
@@ -245,9 +237,7 @@ class Model
         if ($morphTable->uniqueMorph($name)) {
             return;
         }
-        $this->_functions[] = $morph_many = MorphMany::fromTable($name, $morphTable, $this->name);
-        $this->addImport(...$morph_many->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_many);
+        MorphMany::fromTable($name, $morphTable, $this);
     }
 
     protected function morphOneFromMM(string $name, DBTable $morphTable)
@@ -255,9 +245,7 @@ class Model
         if (!$morphTable->uniqueMorph($name)) {
             return;
         }
-        $this->_functions[] = $morph_one = MorphOne::fromTable($name, $morphTable, $this->name);
-        $this->addImport(...$morph_one->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_one);
+        MorphOne::fromTable($name, $morphTable, $this);
     }
 
 
@@ -266,17 +254,13 @@ class Model
         if (!$this->table->has_pivot) {
             return;
         }
-        $this->_functions[] = $bl_many = BelongsToMany::fromTable($this->table, $this->name);
-        $this->addImport(...$bl_many->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($bl_many);
+        BelongsToMany::fromTable($this->table, $this);
     }
 
 
     protected function belongsToFromFK(DBForeignConstraint $foreignKey)
     {
-        $this->_functions[] = $belong_to = BelongsTo::fromForeignKey($foreignKey, $this->name);
-        $this->addImport(...$belong_to->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($belong_to);
+        BelongsTo::fromForeignKey($foreignKey, $this);
     }
 
     protected function belongsToFromColumn(DBColumn $column)
@@ -284,9 +268,7 @@ class Model
         if (blank($column->probable_table)) {
             return;
         }
-        $this->_functions[] = $has_prop = BelongsTo::fromColumn($column, $this->name);
-        $this->addImport(...$has_prop->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_prop);
+        BelongsTo::fromColumn($column, $this);
     }
 
     protected function hasOneFromRefFK(DBForeignConstraint $foreignKey)
@@ -294,20 +276,14 @@ class Model
         if (!$foreignKey->column->is_unique || $foreignKey->column->is_multi_unique) {
             return;
         }
-        $this->_functions[] = $has_one = HasOne::fromForeignKey($foreignKey, $this->name);
-        $this->addImport(...$has_one->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_one);
+        HasOne::fromForeignKey($foreignKey, $this);
     }
 
 
     protected function hasManyFromRefFK(DBForeignConstraint $foreignKey)
     {
-        if ($foreignKey->column->is_unique) {
-            return;
-        }
-        $this->_functions[] = $has_one = HasMany::fromForeignKey($foreignKey, $this->name);
-        $this->addImport(...$has_one->imports());
-        $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($has_one);
+        if ($foreignKey->column->is_unique) return;
+        HasMany::fromForeignKey($foreignKey, $this);
     }
 
     protected function morphedByManyFromRefFK(DBForeignConstraint $foreignKey)
@@ -317,9 +293,7 @@ class Model
         }
         foreach ($morphTos as $name => $tables) {
             foreach ($tables as $_table) {
-                $this->_functions[] = $morph_many = MorphedByMany::fromTable($name, $foreignKey->column, $_table, $this->name);
-                $this->addImport(...$morph_many->imports());
-                $this->_phpdoc_props[] = PhpDocProperty::fromRelationFunction($morph_many);
+                MorphedByMany::fromTable($name, $foreignKey->column, $_table, $this);
             }
         }
     }
@@ -329,5 +303,44 @@ class Model
     {
         $this->_properties[] = ModelProperty::forConnection($name);
         return $this;
+    }
+
+    /**
+     * @param RelationshipFunction|DBColumn $source
+     */
+    public function setPhpDocProperty($source)
+    : ?PhpDocProperty
+    {
+        if (!is_object($source) || !(is_a($source, RelationshipFunction::class) || is_a($source, DBColumn::class))) {
+            return null;
+        }
+        if (is_a($source, RelationshipFunction::class)) {
+            $pDoc = PhpDocProperty::fromRelationFunction($source);
+        } elseif (is_a($source, DBColumn::class)) $pDoc = PhpDocProperty::fromColumn($source);
+        else return null;
+        return $this->_phpdoc_props[$source->name] = $pDoc;
+    }
+
+    /**
+     * @param RelationshipFunction $fn
+     *
+     * @return RelationshipFunction
+     */
+    public function setFunction(RelationshipFunction $fn)
+    {
+        $this->addImport(...$fn->imports());
+        $this->addImport(...$fn->_relations);
+        $this->setPhpDocProperty($fn);
+        return $this->_functions[$fn->name] = $fn;
+    }
+
+    public function functionExist($name)
+    {
+        return array_key_exists($name, $this->_functions);
+    }
+
+    public function phpDocExist($name)
+    {
+        return array_key_exists($name, $this->_phpdoc_props);
     }
 }
