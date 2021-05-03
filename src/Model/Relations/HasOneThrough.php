@@ -27,11 +27,12 @@ class HasOneThrough extends RelationshipFunction
 {
     public function __construct(string $model_class){ parent::__construct(LaravelHasOneThrough::class, $model_class); }
 
-    public static function fromTables(DBTable $primaryTable, DBTable $pivotTable, DBTable $endTable,Model $model)
+    public static function fromTables(DBTable $primaryTable, DBTable $pivotTable, DBTable $endTable, Model $model)
     {
         $pri_column = $primaryTable->primary_column;
         $piv_column = $pivotTable->relationColumn($primaryTable);
         $end_column = $endTable->relationColumn($pivotTable);
+
         if (!$pri_column || !$piv_column || !$end_column) return null;
 
         $me                     = new self($model->name);
@@ -45,7 +46,7 @@ class HasOneThrough extends RelationshipFunction
         $me->keys = relation_keys([$primaryTable->foreign_column_name, $piv_column->name], [$pivotTable->foreign_column_name, $end_column->name], [Config::LARAVEL_ID, $pri_column->name], [Config::LARAVEL_ID, $pivotTable->primary_column->name]);
         $me->autoload();
 
-        return  $model->setFunction($me);
+        return $model->setFunction($me);
     }
 
     /**

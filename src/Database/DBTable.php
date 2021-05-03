@@ -56,6 +56,8 @@ class DBTable extends BaseDBClass
     {
         $this->db = $database;
         parent::__construct($values);
+        $this->_props['one_through'] =
+        $this->_props['many_through'] = [];
     }
 
     protected function relation_name_singular()
@@ -168,7 +170,7 @@ class DBTable extends BaseDBClass
     {
         /** @var DBForeignConstraint $fk */
         if ($fk = \Arr::first($this->foreign_keys, function(DBForeignConstraint $fk) use ($endTable){ return 0 === strcasecmp($fk->referenced_table_name, $endTable->name); })) return $fk->column;
-        return $this->columns["{$this->name}.{$endTable->foreign_column_name}"] ?? \Arr::first($this->columns, function(DBColumn $column) use ($endTable){ return in_array($column, $endTable->foreign_column_names); });
+        return $this->columns["{$this->name}.{$endTable->foreign_column_name}"] ?? \Arr::first($this->columns, function(DBColumn $column) use ($endTable){ return in_array($column->name, $endTable->foreign_column_names); });
     }
 
     /**
@@ -211,13 +213,16 @@ class DBTable extends BaseDBClass
 
     public function setOneThrough(array $throughs)
     {
-        $this->_props['one_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts);}, $throughs[$this->name] ?? []);
+        if (empty($throughs[$this->name])) return $this;
+        $this->_props['one_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts); }, $throughs[$this->name] ?? []);
         return $this;
     }
 
     public function setManyThrough(array $throughs)
     {
-        $this->_props['many_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts);}, $throughs[$this->name] ?? []);
+        if (empty($throughs[$this->name])) return $this;
+        //  print_r($throughs[$this->name]);
+        $this->_props['many_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts); }, $throughs[$this->name] ?? []);
         return $this;
     }
 }

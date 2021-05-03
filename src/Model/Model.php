@@ -164,7 +164,7 @@ class Model
 
     protected function manyThroughFilters()
     {
-        foreach ($this->table->one_through as $item) {
+        foreach ($this->table->many_through as $item) {
             $this->hasManyThrough($item[0], $item[1]);
         }
     }

@@ -100,7 +100,7 @@ class Factory
         $ones     = $this->throughList(Config::has_one_through());
         $throughs = [];
         foreach ($ones as $tables) {
-            $k              = array_pop($tables);
+            $k              = array_shift($tables);
             $throughs[$k][] = $tables;
         }
         return $throughs;
@@ -111,7 +111,7 @@ class Factory
         $manys    = $this->throughList(Config::has_many_through());
         $throughs = [];
         foreach ($manys as $tables) {
-            $k              = array_pop($tables);
+            $k              = array_shift($tables);
             $throughs[$k][] = $tables;
         }
         return $throughs;
