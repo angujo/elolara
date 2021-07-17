@@ -24,6 +24,7 @@ use Angujo\Elolara\Util;
  * @property string              $name
  * @property string              $ordinal
  * @property string              $default
+ * @property mixed               $default_value
  * @property string              $relation_name_singular
  * @property string              $relation_name_plural
  * @property boolean             $is_nullable
@@ -53,6 +54,14 @@ class DBColumn extends BaseDBClass
         $this->db = $schema;
         parent::__construct($values);
         $this->_setProp('data_type', DataType::fromColumn($this));
+    }
+
+    protected function default_value()
+    {
+        if (!strlen($this->default)) return null;
+        if ($this->data_type->isBool) return var_export($this->default, true);
+        if ($this->data_type->isJson) return json_decode($this->default, true);
+        return $this->default;
     }
 
     protected function probable_table()

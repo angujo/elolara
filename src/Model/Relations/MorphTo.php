@@ -28,7 +28,7 @@ class MorphTo extends RelationshipFunction
 
     /**
      * @param string          $name
-     * @param string          $model_class
+     * @param Model           $model
      * @param array|DBTable[] $tables
      * @param bool            $nullable
      *
@@ -39,6 +39,7 @@ class MorphTo extends RelationshipFunction
         $me              = new self($model->name);
         $me->is_nullable = $nullable;
         foreach ($tables as $table) {
+            if (!is_a($table, DBTable::class)) continue;
             $me->data_types[]        = $table->class_name;
             $me->implied_relations[] = $table->fqdn;
         }
@@ -46,7 +47,7 @@ class MorphTo extends RelationshipFunction
         $me->phpdoc_description = "* MorphTo method for the models ".implode(', ', $me->data_types);
         $me->autoload();
 
-        return  $model->setFunction($me);
+        return $model->setFunction($me);
     }
 
     /**

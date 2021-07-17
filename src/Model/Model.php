@@ -97,6 +97,7 @@ class Model
         }
         if (false !== $for_base) {
             $me->addTrait(...\Arr::wrap(Config::table_traits()[$table->name] ?? []));
+            progress_message('Starting table processing...');
             $me->processTable();
         }
         return $me;
@@ -105,6 +106,7 @@ class Model
     protected function processTable()
     {
         $columns = $this->table->columns;
+        progress_message('Loading Columns...');
         foreach ($columns as $column) {
             if (in_array($column->name, Config::soft_delete_columns()) && $column->data_type->isTimestamp) {
                 $this->addTrait(SoftDeletes::class);
@@ -121,6 +123,7 @@ class Model
             }
             $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column);
         }
+        progress_message('Loading properties...');
         $this->_properties[] = ModelProperty::forTableName($this->table);
 
         $this->_properties[] = $prKeys = ModelProperty::forPrimaryKey($this->table);
@@ -142,17 +145,26 @@ class Model
         if ($casts) {
             $this->addImport(...$casts->imports());
         }
-
+        progress_message('Referenced FKs...');
         $this->refForeignKeysFilters();
+        progress_message('FKs...');
         $this->foreignKeysFilters();
-        $this->columnFilters();
+        progress_message('Column Filters...');
+       // $this->columnFilters();
+        progress_message('MorphMany...');
         $this->morphManyFilters();
+        progress_message('MorphTo...');
         $this->morphToFilters();
+        progress_message('BelongsToMany...');
         $this->belongsToManyRelation();
+        progress_message('One-Through...');
         $this->oneThroughFilters();
+        progress_message('Many-Through...');
         $this->manyThroughFilters();
 
+        progress_message('Cleaning Imports...');
         $this->addImport(null);
+        progress_message('End Processing...');
     }
 
     protected function oneThroughFilters()
@@ -165,6 +177,7 @@ class Model
     protected function manyThroughFilters()
     {
         foreach ($this->table->many_through as $item) {
+            if (!is_a($item[0], DBTable::class) || !is_a($item[1], DBTable::class)) continue;
             $this->hasManyThrough($item[0], $item[1]);
         }
     }
@@ -299,6 +312,7 @@ class Model
         }
         foreach ($morphTos as $name => $tables) {
             foreach ($tables as $_table) {
+                if (!is_a($_table, DBTable::class)) continue;
                 MorphedByMany::fromTable($name, $foreignKey->column, $_table, $this);
             }
         }

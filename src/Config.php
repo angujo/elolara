@@ -185,7 +185,7 @@ class Config
 
     public static function abstracts_namespace()
     {
-        return self::schema_namespace('\\').self::abstracts_prefix();
+        return self::schema_namespace('\\').'\\'.self::abstracts_prefix();
     }
 
     public static function schema_namespace($sfx = null)

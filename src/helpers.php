@@ -7,6 +7,7 @@
  */
 
 use Angujo\Elolara\Database\DBTable;
+use Angujo\Elolara\Laravel\Factory;
 
 if (!function_exists('array_export')) {
     function array_export(array $arr, $print = false)
@@ -51,6 +52,15 @@ if (!function_exists('class_name')) {
     function class_name($name)
     {
         return ucfirst(\Str::camel(\Str::singular($name)));
+    }
+}
+
+if (!function_exists('progress_message')) {
+    function progress_message(string $name)
+    {
+        if (!Factory::$BAR) return;
+        Factory::$BAR->advance();
+        Factory::$BAR->setMessage($name);
     }
 }
 

@@ -111,7 +111,7 @@ class ModelCommand extends Command
             Config::only_tables($this->tables);
         }
         $this->factory->setConnection($this->connection, $this->database);
-        $this->factory->runSchema();
+        $this->factory->runSchema($this->output);
 
         return 0;
         // var_dump(Config::all());

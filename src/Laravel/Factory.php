@@ -16,7 +16,9 @@ use Angujo\Elolara\Database\DBTable;
 use Angujo\Elolara\Model\CoreModel;
 use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\SchemaModel;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Database\ConnectionInterface;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * Class Factory
@@ -28,6 +30,8 @@ class Factory
     /** @var ConnectionInterface */
     private $connection;
     private $con_name;
+    /** @var ProgressBar */
+    public static $BAR;
 
     public function __construct()
     {
@@ -50,7 +54,7 @@ class Factory
         return $this->connection = \DB::connection($conn_name);
     }
 
-    public function runSchema()
+    public function runSchema(OutputStyle $output)
     {
         $dbms = new DBMS($this->connection);
 
@@ -59,26 +63,50 @@ class Factory
                        ->setOnlyTables(...\Arr::wrap(Config::only_tables()));
 
         $dbms->loadSchema();
-
+        $tables    = $schema->tables;
+        self::$BAR = $output->createProgressBar((count($tables) * 17) + 5);
+        self::$BAR->setFormat("%current%/%max% [%bar%] %percent:3s%% %message%");
+        self::$BAR->setMessage('Init');
+        self::$BAR->start();
+        self::$BAR->setMessage('Preparing dirs...');
         $this->prepareDirs();
+        self::$BAR->advance();
+        self::$BAR->setMessage('Writing core models...');
         $this->writeCoreModel();
-
         if (Config::db_directories()) $this->writeSchemaModel();
+        self::$BAR->advance();
 
-        $this->tablesPivotRelations($schema);
-        $morphs      = $this->tablesMorphRelations($schema);
-        $oneThrough  = $this->oneThroughRelations();
+        //$this->tablesPivotRelations($schema);
+        self::$BAR->setMessage('loading morph relations...');
+        $morphs = $this->tablesMorphRelations($schema);
+        self::$BAR->advance();
+        self::$BAR->setMessage('Loading On-Through relations...');
+        $oneThrough = $this->oneThroughRelations();
+        self::$BAR->advance();
+        self::$BAR->setMessage('Loading Many-Through relations...');
         $manyThrough = $this->manyThroughRelations();
-        $tables      = $schema->tables;
+        self::$BAR->advance();
         foreach ($tables as $table) {
+            self::$BAR->setFormat("%current%/%max% [%bar%] %percent:3s%% {$table->name}: %message%");
+            self::$BAR->setMessage("Morphs...");
             $table->setMorph($morphs);
-            $table->setOneThrough($oneThrough);
-            $table->setManyThrough($manyThrough);
+            self::$BAR->advance();
+            self::$BAR->setMessage("One-Through...");
+            if (!empty($oneThrough[$table->name])) $table->setOneThrough($oneThrough);
+            self::$BAR->advance();
+            self::$BAR->setMessage("Many-Through...");
+            if (!empty($manyThrough[$table->name])) $table->setManyThrough($manyThrough);
+            self::$BAR->advance();
+            self::$BAR->setMessage("Writing Model...");
             if (Config::base_abstract()) {
                 $this->writeModel(Model::fromTable($table, true)->setConnection($this->con_name));
                 $this->writeModel(Model::fromTable($table, false));
             } else  $this->writeModel(Model::fromTable($table, true)->setConnection($this->con_name));
+            self::$BAR->advance();
         }
+        self::$BAR->setFormat("%current%/%max% [%bar%] %percent:3s%% %message%");
+        self::$BAR->setMessage('Done!');
+        self::$BAR->finish();
     }
 
     protected function prepareDirs()
@@ -177,15 +205,18 @@ class Factory
 
     private function pivotCombinations(array $tables)
     {
-        $maps = array_map(function($tables){
-            return [
-                [implode('_', $tables), $tables],
-                [implode('_', array_reverse($tables)), $tables],
-                [implode('_', [\Str::singular($tables[0]), $tables[1]]), $tables],
-                [implode('_', [\Str::singular($tables[1]), $tables[0]]), $tables],
-            ];
-        },
-            array_filter(array_combination(array_map(function(DBTable $t){ return $t->name; }, $tables)), function($tn){ return 2 === count($tn); }));
+        echo var_export(array_map(function(DBTable $t){ return $t->name; }, $tables), true);
+        $maps = array_map(
+            function($tables){
+                return [
+                    [implode('_', $tables), $tables],
+                    [implode('_', array_reverse($tables)), $tables],
+                    [implode('_', [\Str::singular($tables[0]), $tables[1]]), $tables],
+                    [implode('_', [\Str::singular($tables[1]), $tables[0]]), $tables],
+                ];
+            },
+            array_filter(array_combination(array_map(function(DBTable $t){ return $t->name; }, $tables)), function($tn){ return 2 === count($tn); })
+        );
         $maps = array_merge(array_column($maps, 0), array_column($maps, 1), array_column($maps, 2), array_column($maps, 3));
         return array_combine(array_column($maps, 0), array_column($maps, 1));
     }

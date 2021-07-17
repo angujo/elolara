@@ -153,7 +153,7 @@ class ModelProperty
             return null;
         }
         $keys            = array_map(function(DBColumn $col){ return $col->name; }, $columns);
-        $values          = array_map(function(DBColumn $col){ return $col->default; }, $columns);
+        $values          = array_map(function(DBColumn $col){ return $col->default_value; }, $columns);
         $me              = new self();
         $me->var         = '* @var array';
         $me->description = '* Default values for attributes';
