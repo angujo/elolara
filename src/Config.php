@@ -53,6 +53,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string column_relation_pattern($value = null)
  * @method static string[]|array has_one_through($value = null)
  * @method static string[]|array has_many_through($value = null)
+ * @method static string[]|array pivot_tables()
  */
 class Config
 {
@@ -221,7 +222,7 @@ class Config
     private function defaults()
     {
         $configs = include(__DIR__.DIRECTORY_SEPARATOR.'Laravel'.DIRECTORY_SEPARATOR.'config.php');
-        unset($configs['has_one_through'], $configs['has_many_through']);
+        unset($configs['has_one_through'], $configs['has_many_through'], $configs['pivot_tables']);
         return $configs;
     }
 
@@ -230,7 +231,7 @@ class Config
      */
     private function user()
     {
-        return config(LM_APP_NAME);
+        return config(LM_APP_NAME, []);
     }
 
     protected function setCoreTraits()

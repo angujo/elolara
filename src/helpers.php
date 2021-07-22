@@ -65,19 +65,27 @@ if (!function_exists('progress_message')) {
 }
 
 if (!function_exists('array_combination')) {
-    function array_combination(array $array)
+    function array_combination(array $chars, int $size, array $combinations = [])
     {
-        $results = [];
-
-        foreach ($array as $x) {
-            foreach ($array as $y) {
-                foreach ($array as $z) {
-                    $results[] = [$x, $y, $z];
-                }
+        # in case of first iteration, the first set of combinations is the same as the set of characters
+        if (empty($combinations)) {
+            $combinations = $chars;
+        }
+        # size 1 indicates we are done
+        if ($size == 1) {
+            return $combinations;
+        }
+        # initialise array to put new values into it
+        $new_combinations = [];
+        # loop through the existing combinations and character set to create strings
+        foreach ($combinations as $combination) {
+            foreach ($chars as $char) {
+                if (!is_array($combination) && 0 === strcasecmp($combination, $char)) continue;
+                $new_combinations[] = array_unique(is_array($combination) ? array_merge($combination, [$char]) : [$combination, $char]);
             }
         }
-
-        return $results;
+        # call the same function again for the next iteration as well
+        return array_combination($chars, $size - 1, $new_combinations);
     }
 }
 
@@ -157,5 +165,24 @@ if (!function_exists('array_truncate')) {
             }
         }
         return $values;
+    }
+}
+
+if (!function_exists('array_flatten')) {
+    function array_flatten($array)
+    : array
+    {
+        if (!is_array($array)) {
+            return [];
+        }
+        $result = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $result = array_merge($result, array_flatten($value));
+            } else {
+                $result = array_merge($result, [$key => $value]);
+            }
+        }
+        return $result;
     }
 }

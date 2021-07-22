@@ -33,7 +33,9 @@ class HasManyThrough extends RelationshipFunction
         $pri_column = $primaryTable->primary_column;
         $piv_column = $pivotTable->relationColumn($primaryTable);
         $end_column = $endTable->relationColumn($pivotTable);
-        if (!$pri_column || !$piv_column || !$end_column) return null;
+        if (!$pri_column || !$piv_column || !$end_column){
+            return null;
+        }
 
         $me                     = new self($model->name);
         $me->name               = function_name_plural($pivotTable->name.'_'.$endTable->name);

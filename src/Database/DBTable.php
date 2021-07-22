@@ -31,8 +31,7 @@ use Angujo\Elolara\Database\Traits\HasName;
  * @property string                      $relation_name_plural
  * @property string                      $fqdn
  * @property string                      $class_name_key
- * @property string                      $pivot_table_name
- * @property string                      $pivot_end_table_name
+ * @property string[][]                  $pivot_connections
  * @property string                      $comment
  * @property DBTable|null                $pivot_table
  * @property DBTable|null                $pivot_end_table
@@ -153,17 +152,20 @@ class DBTable extends BaseDBClass
 
     protected function pivot_tables()
     {
-        return $this->is_pivot ? array_combine($this->_props['pivot_table_names'], array_map(function($name){ return $this->db->getTable($name); }, $this->_props['pivot_table_names'])) : [];
+        return $this->is_pivot ?
+            array_combine($this->_props['pivot_table_names'],
+                          array_map(function($name){ return $this->db->getTable($name); }, $this->_props['pivot_table_names'])) : [];
     }
 
-    protected function pivot_table()
+    public function getPivotTable(string $piv_name)
     {
-        return $this->has_pivot ? $this->db->getTable($this->pivot_table_name) : null;
+        return $this->has_pivot && array_key_exists($piv_name, $this->pivot_connections) ? $this->db->getTable($piv_name) : null;
     }
 
-    protected function pivot_end_table()
+    public function getPivotEndTable(string $piv_name, string $tbl_name)
     {
-        return $this->has_pivot ? $this->db->getTable($this->pivot_end_table_name) : null;
+        return $this->has_pivot && array_key_exists($piv_name, $this->pivot_connections) && in_array($tbl_name, $this->pivot_connections[$piv_name]) ?
+            $this->db->getTable($tbl_name) : null;
     }
 
     public function relationColumn(DBTable $endTable)
@@ -193,15 +195,17 @@ class DBTable extends BaseDBClass
     public function setIsPivot(array $combinations)
     {
         $this->_props['is_pivot']          = true;
-        $this->_props['pivot_table_names'] = $combinations;
+        $this->_props['pivot_table_names'] = array_flatten($combinations);
         return $this;
     }
 
     public function setEndPivot(string $pivot_table_name, string $pivot_end_table_name)
     {
-        $this->_props['has_pivot']            = true;
-        $this->_props['pivot_table_name']     = $pivot_table_name;
-        $this->_props['pivot_end_table_name'] = $pivot_end_table_name;
+        $this->_props['has_pivot'] = true;
+        /*
+        $this->_props['pivot_table_name']                       = $pivot_table_name;
+        $this->_props['pivot_end_table_name']                   = $pivot_end_table_name;*/
+        $this->_props['pivot_connections'][$pivot_table_name][] = $pivot_end_table_name;
         return $this;
     }
 
@@ -221,7 +225,6 @@ class DBTable extends BaseDBClass
     public function setManyThrough(array $throughs)
     {
         if (empty($throughs[$this->name])) return $this;
-        //  print_r($throughs[$this->name]);
         $this->_props['many_through'] = array_map(function(array $ts){ return array_map([$this->db, 'getTable'], $ts); }, $throughs[$this->name] ?? []);
         return $this;
     }

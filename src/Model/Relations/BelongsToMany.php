@@ -25,55 +25,55 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany as LaravelBelongsToMany
  */
 class BelongsToMany extends RelationshipFunction
 {
-    public function __construct($modelClass){ parent::__construct(LaravelBelongsToMany::class,$modelClass); }
+    public function __construct($modelClass){ parent::__construct(LaravelBelongsToMany::class, $modelClass); }
 
-    public static function fromTable(DBTable $table,Model $model)
+    public static function fromTable(DBTable $table, DBTable $pivotTable, DBTable $endTable, Model $model)
     {
 
-        $name             = $table->pivot_end_table->relation_name_plural;
+        $name             = $endTable->relation_name_plural;
         $me               = new self($model->name);
-        $me->_relations[] = $table->pivot_end_table->fqdn;
-        $me->data_types[] = $table->pivot_end_table->class_name.'[]';
+        $me->_relations[] = $endTable->fqdn;
+        $me->data_types[] = $endTable->class_name.'[]';
         $me->data_types[] = basename(Collection::class);
         // $me->is_nullable        = $foreignKey->column->is_nullable;
         $me->name               = $name;
-        $me->phpdoc_description = "* Relation method to get {$table->pivot_end_table->class_name}";
+        $me->phpdoc_description = "* Relation method to get {$endTable->class_name}";
         $me->addImport(Collection::class);
-        $me->keyRelations($table);
-        $me->pivotName($table->pivot_table);
-        $me->pivotColumns($table);
+        $me->keyRelations_($table, $pivotTable, $endTable);
+        $me->pivotName($pivotTable);
+        $me->pivotColumns($table, $pivotTable, $endTable);
         $me->autoload();
 
-        return  $model->setFunction($me);
+        return $model->setFunction($me);
     }
 
     /**
      * @inheritDoc
      */
-    function keyRelations($source)
+    function keyRelations_($source, DBTable $pivotTable, DBTable $endTable)
     {
-        $names = [$source->name, $source->pivot_end_table_name];
+        $names = [$source->name, $endTable->name];
         sort($names);
         $f = \Str::singular(array_pop($names));
         array_unshift($names, $f);
-        $source_column = $source->pivot_table->pivotedColumn($source->name);
-        $pivot_column  = $source->pivot_table->pivotedColumn($source->pivot_end_table_name);
+        $source_column = $pivotTable->pivotedColumn($source->name);
+        $pivot_column  = $pivotTable->pivotedColumn($endTable->name);
         $this->keys    = relation_keys(
-            [implode('_', $names), $source->pivot_table_name],
+            [implode('_', $names), $pivotTable->name],
             [$source->foreign_column_name, $source_column->name],
-            [$source->pivot_end_table->foreign_column_name, $pivot_column->name]
+            [$endTable->foreign_column_name, $pivot_column->name]
         //TODO Research and append more on  $parentKey = null, $relatedKey = null, $relation = null to append here
         // @see @vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/HasRelationships.php
         );
 
     }
 
-    public function pivotColumns(DBTable $source)
+    public function pivotColumns(DBTable $source, DBTable $pivotTable, DBTable $endTable)
     {
-        $source_column = $source->pivot_table->pivotedColumn($source->name);
-        $pivot_column  = $source->pivot_table->pivotedColumn($source->pivot_end_table_name);
+        $source_column = $pivotTable->pivotedColumn($source->name);
+        $pivot_column  = $pivotTable->pivotedColumn($endTable->name);
         $cols          = array_map(function(DBColumn $column){ return $column->name; },
-            array_filter($source->pivot_table->columns, function(DBColumn $c) use ($source_column, $pivot_column){ return !in_array($c->name, [$pivot_column->name, $source_column->name]); }));
+            array_filter($pivotTable->columns, function(DBColumn $c) use ($source_column, $pivot_column){ return !in_array($c->name, [$pivot_column->name, $source_column->name]); }));
         if (empty($cols)) {
             return;
         }
@@ -88,7 +88,12 @@ class BelongsToMany extends RelationshipFunction
     public function pivotName(DBTable $pivot_table)
     {
         if (Config::pivot_name_regex() && $pivot_table->comment && ($name = preg_replace('/'.Config::pivot_name_regex().'/', '$1', $pivot_table->comment))) {
-            $this->rel_extend .= '->as('.var_export($name,true).')';
+            $this->rel_extend .= '->as('.var_export($name, true).')';
         }
+    }
+
+    function keyRelations($source)
+    {
+        // TODO: Implement keyRelations() method.
     }
 }

@@ -168,6 +168,10 @@ class DataType
             case 'macaddr':
             case 'macaddr8':
             case 'varchar':
+            case 'text':
+            case 'tinytext':
+            case 'mediumtext':
+            case 'longtext':
             case 'character varying':
                 return 'varchar';
             case 'json':
@@ -193,10 +197,6 @@ class DataType
             case 'txid_snapshot':
             case 'uuid':
             case 'xml':
-            case 'text':
-            case 'tinytext':
-            case 'mediumtext':
-            case 'longtext':
             case 'enum':
             case 'set':
             default:

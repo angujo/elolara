@@ -76,7 +76,7 @@ class Factory
         if (Config::db_directories()) $this->writeSchemaModel();
         self::$BAR->advance();
 
-        //$this->tablesPivotRelations($schema);
+        $this->tablesPivotRelations($schema);
         self::$BAR->setMessage('loading morph relations...');
         $morphs = $this->tablesMorphRelations($schema);
         self::$BAR->advance();
@@ -188,37 +188,29 @@ class Factory
 
     private function tablesPivotRelations(DatabaseSchema $schema)
     {
-        $tables       = $schema->tables;
-        $combinations = $this->pivotCombinations($tables);
-        $relations    = array_intersect(array_keys($combinations), array_keys($tables));
-        if (empty($relations)) {
-            return;
-        }
-        foreach ($relations as $relation) {
-            $comb = $combinations[$relation];
-            $schema->getTable($relation)->setIsPivot($comb);
-            foreach ($comb as $i => $t_name) {
-                $schema->getTable($t_name)->setEndPivot($relation, $comb[$i ? 0 : 1]);
+        $pivots = array_filter($this->pivotTableFactory($schema), function($p){ return count($p) == 2; });
+        if (empty($pivots)) return;
+        foreach ($pivots as $pivot => $relations) {
+            $schema->getTable($pivot)->setIsPivot($relations);
+            foreach ($relations as $_relations) {
+                $schema->getTable($_relations[0])->setEndPivot($pivot, $_relations[1]);
             }
         }
     }
 
-    private function pivotCombinations(array $tables)
+    private function pivotTableFactory(DatabaseSchema $schema)
     {
-        echo var_export(array_map(function(DBTable $t){ return $t->name; }, $tables), true);
-        $maps = array_map(
-            function($tables){
-                return [
-                    [implode('_', $tables), $tables],
-                    [implode('_', array_reverse($tables)), $tables],
-                    [implode('_', [\Str::singular($tables[0]), $tables[1]]), $tables],
-                    [implode('_', [\Str::singular($tables[1]), $tables[0]]), $tables],
-                ];
-            },
-            array_filter(array_combination(array_map(function(DBTable $t){ return $t->name; }, $tables)), function($tn){ return 2 === count($tn); })
-        );
-        $maps = array_merge(array_column($maps, 0), array_column($maps, 1), array_column($maps, 2), array_column($maps, 3));
-        return array_combine(array_column($maps, 0), array_column($maps, 1));
+        /** @var string[] $pivots */
+        $pivots = (is_array($p = Config::pivot_tables()) ? $p : []);
+        $mix    = [];
+        foreach ($pivots as $pivot_name) {
+            if (!($table = $schema->getTable($pivot_name))) continue;
+            foreach ($table->foreign_keys as $referencing_foreign_key) {
+                $mix[$pivot_name][] = $referencing_foreign_key->referenced_table_name;
+            }
+            $mix[$pivot_name] = array_combination($mix[$pivot_name], 2);
+        }
+        return $mix;
     }
 
     protected function writeModel(Model $model)

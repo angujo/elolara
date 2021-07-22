@@ -176,7 +176,7 @@ return [
     'full_namespace_import'   => false,
     /*
      * @see https://laravel.com/docs/eloquent-relationships#has-one-through
-     * This is a complex relation and currently no safe way to implement.
+     * This is a complex relation and currently no direct way to implement.
      * Use below entry to define table relations.
      * Entries need to be sequential starting from parent table to target table and pivot in between.
      * THIS ENTRY WILL BE IGNORED UNLESS USED WITHIN [schemas] BELOW.
@@ -184,12 +184,22 @@ return [
     'has_one_through'         => [['mechanics', 'cars', 'owners'], 'mechanics,cars,owners',],
     /*
      * @see https://laravel.com/docs/eloquent-relationships#has-many-through
-     * This is a complex relation and currently no safe way to implement.
+     * This is a complex relation and currently no direct way to implement.
      * Use below entry to define table relations.
      * Entries need to be sequential starting from parent table to target table and pivot in between.
      * THIS ENTRY WILL BE IGNORED UNLESS USED WITHIN [schemas] BELOW.
      */
     'has_many_through'        => [['countries', 'users', 'posts'], 'countries,users,posts',],
+    /*
+     * @see https://laravel.com/docs/eloquent-relationships#has-many-through
+     * This is a complex relation and currently no direct way to implement.
+     * Use below entry to define pivoting tables.
+     * Entries should be list of table names that act as pivot for multiple other tables.
+     * E.g. user and roles tables can have user_roles table as pivot table. therefore, 'user_roles' is entered below as pivot table.
+     * The other relations will be auto-picked.
+     * THIS ENTRY WILL BE IGNORED UNLESS USED WITHIN [schemas] BELOW.
+     */
+    'pivot_tables'            => [],
     /*
      * Enter traits here used by all models.
      * When used within [schemas], table name can be used as well.
@@ -207,7 +217,8 @@ return [
         /*
          * Define [has_one_through] and [has_many_through] here within the schema name
          * E.g. 'db1'=>['has_many_through'        => [['countries', 'users', 'posts'], 'countries,users,posts',],
-         *               'has_one_through'         => [['mechanics', 'cars', 'owners'], 'mechanics,cars,owners',],]
+         *               'has_one_through'         => [['mechanics', 'cars', 'owners'], 'mechanics,cars,owners',],
+         *               'pivot_tables'         => ['user_roles', 'role_rights',]
          */
         /*
           'information_schema' => [

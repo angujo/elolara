@@ -89,7 +89,7 @@ class DatabaseSchema extends BaseDBClass
      *
      * @return DBTable|null
      */
-    public function getTable($name)
+    public function getTable(string $name)
     {
         return $this->tables[$name] ?? null;
     }

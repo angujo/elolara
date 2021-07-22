@@ -10,6 +10,7 @@ namespace Angujo\Elolara\Model;
 
 
 use Angujo\Elolara\Config;
+use Angujo\Elolara\Database\DatabaseSchema;
 use Angujo\Elolara\Database\DBColumn;
 use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
@@ -145,12 +146,13 @@ class Model
         if ($casts) {
             $this->addImport(...$casts->imports());
         }
+        $this->_constants = array_unique($this->_constants);
         progress_message('Referenced FKs...');
         $this->refForeignKeysFilters();
         progress_message('FKs...');
         $this->foreignKeysFilters();
         progress_message('Column Filters...');
-       // $this->columnFilters();
+        // $this->columnFilters();
         progress_message('MorphMany...');
         $this->morphManyFilters();
         progress_message('MorphTo...');
@@ -270,10 +272,12 @@ class Model
 
     protected function belongsToManyRelation()
     {
-        if (!$this->table->has_pivot) {
-            return;
+        if (!$this->table->has_pivot) return;
+        foreach ($this->table->pivot_connections as $pivot_tblname => $pivot_connections) {
+            foreach ($pivot_connections as $end_tbl_name) {
+                BelongsToMany::fromTable($this->table, $this->table->getPivotTable($pivot_tblname), $this->table->getPivotEndTable($pivot_tblname, $end_tbl_name), $this);
+            }
         }
-        BelongsToMany::fromTable($this->table, $this);
     }
 
 
