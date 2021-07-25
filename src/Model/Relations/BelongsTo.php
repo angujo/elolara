@@ -73,10 +73,12 @@ class BelongsTo extends RelationshipFunction
         }
         switch (get_class($source)) {
             case DBForeignConstraint::class:
-                $this->keys = relation_keys([Config::LARAVEL_PRIMARY_KEY, $source->referenced_column_name], [$source->referenced_table->foreign_column_name, $source->column_name]);
+                $this->keys = relation_keys([$source->referenced_table->foreign_column_name, $source->column_name],
+                                            [Config::LARAVEL_PRIMARY_KEY, $source->referenced_column_name]);
                 break;
             case DBColumn::class:
-                $this->keys = relation_keys([Config::LARAVEL_PRIMARY_KEY, $source->probable_table->primary_column->name], [$source->probable_table->foreign_column_name, $source->name]);
+                $this->keys = relation_keys([$source->probable_table->foreign_column_name, $source->name],
+                                            [Config::LARAVEL_PRIMARY_KEY, $source->probable_table->primary_column->name]);
                 break;
         }
     }
