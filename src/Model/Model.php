@@ -142,6 +142,7 @@ class Model
         $this->_constants[]  = $upd;
         $this->_properties[] = ModelProperty::forDates($this->table);
         $this->_properties[] = ModelProperty::forAttributes($this->table);
+        $this->_properties[] = ModelProperty::forFillables($this->table);
         $this->_properties[] = $casts = ModelProperty::forCasts($this->table);
         if ($casts) {
             $this->addImport(...$casts->imports());

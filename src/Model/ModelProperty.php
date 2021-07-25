@@ -159,7 +159,24 @@ class ModelProperty
         $me->description = '* Default values for attributes';
         $me->access      = 'protected';
         $me->name        = 'attributes';
-        $me->value       = var_export(array_combine($keys, $values), true);
+        $me->value       = array_export(array_combine($keys, $values));
+        return $me;
+    }
+
+    public static function forFillables(DBTable $table)
+    {
+        $columns = array_filter($table->columns, function(DBColumn $col){
+            return !$col->is_auto_incrementing && !$col->is_generated && !in_array($col->name, Config::timestampColumnNames());
+        });
+        if (empty($columns)) {
+            return null;
+        }
+        $me              = new self();
+        $me->var         = '* @var array|string[]';
+        $me->description = '* Mass Assignable columns';
+        $me->access      = 'protected';
+        $me->name        = 'fillable';
+        $me->value       = array_export(array_values(array_map(function(DBColumn $col){ return $col->name; }, $columns)));
         return $me;
     }
 
