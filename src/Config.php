@@ -159,6 +159,11 @@ class Config
         return Util::className(LM_APP_NAME.'_model');
     }
 
+    public static function super_morph_name()
+    {
+        return Util::className(LM_APP_NAME.'_morph_map');
+    }
+
     public static function schema_model_name()
     {
         return Util::className(Config::schema_name().'_model');

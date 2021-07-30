@@ -62,9 +62,8 @@ class BelongsTo extends RelationshipFunction
         $model->addImport(...$me->imports());
         $model->setPhpDocProperty($me);
 
-        return $model->setFunction($me);;
+        return $model->setFunction($me);
     }
-
 
     public function keyRelations($source)
     {

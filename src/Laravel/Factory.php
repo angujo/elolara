@@ -15,6 +15,7 @@ use Angujo\Elolara\Database\DBMS;
 use Angujo\Elolara\Database\DBTable;
 use Angujo\Elolara\Model\CoreModel;
 use Angujo\Elolara\Model\Model;
+use Angujo\Elolara\Model\MorphModel;
 use Angujo\Elolara\Model\SchemaModel;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Database\ConnectionInterface;
@@ -73,6 +74,9 @@ class Factory
         self::$BAR->advance();
         self::$BAR->setMessage('Writing core models...');
         $this->writeCoreModel();
+        self::$BAR->advance();
+        self::$BAR->setMessage('Writing core morph models...');
+        $this->writeCoreMorphModel($schema);
         if (Config::db_directories()) $this->writeSchemaModel();
         self::$BAR->advance();
 
@@ -236,6 +240,13 @@ class Factory
     protected function writeCoreModel()
     {
         $model = CoreModel::load();
+        $path  = Config::extensions_dir().$model->name.'.php';
+        file_put_contents($path, (string)$model);
+    }
+
+    protected function writeCoreMorphModel(DatabaseSchema $schema)
+    {
+        $model = MorphModel::core($schema);
         $path  = Config::extensions_dir().$model->name.'.php';
         file_put_contents($path, (string)$model);
     }
