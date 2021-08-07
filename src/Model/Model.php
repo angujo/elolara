@@ -25,6 +25,7 @@ use Angujo\Elolara\Model\Relations\MorphMany;
 use Angujo\Elolara\Model\Relations\MorphOne;
 use Angujo\Elolara\Model\Relations\MorphTo;
 use Angujo\Elolara\Model\Relations\MorphToMany;
+use Angujo\Elolara\Model\Relations\MorphToOne;
 use Angujo\Elolara\Model\Traits\HasMetaData;
 use Angujo\Elolara\Model\Traits\HasTemplate;
 use Angujo\Elolara\Model\Traits\ImportsClass;
@@ -118,9 +119,7 @@ class Model
             }
             if (Config::constant_column_names()) {
                 $this->_constants[] = $const = ModelConst::fromColumn($column);
-                if ($const) {
-                    $this->addImport(...$const->imports());
-                }
+                if ($const) $this->addImport(...$const->imports());
             }
             $this->_phpdoc_props[] = PhpDocProperty::fromColumn($column);
         }
@@ -132,6 +131,7 @@ class Model
             $this->addTrait($prKeys->traits());
             $this->addImport($prKeys->imports());
         }
+        if (Config::validation_rules()) $this->_properties[] = ModelProperty::forRules($this->table);
 
         $this->_properties[] = ModelProperty::forIncrementing($this->table);
         $this->_properties[] = ModelProperty::forKeyType($this->table);
@@ -144,9 +144,7 @@ class Model
         $this->_properties[] = ModelProperty::forAttributes($this->table);
         $this->_properties[] = ModelProperty::forFillables($this->table);
         $this->_properties[] = $casts = ModelProperty::forCasts($this->table);
-        if ($casts) {
-            $this->addImport(...$casts->imports());
-        }
+        if ($casts) $this->addImport(...$casts->imports());
         $this->_constants = array_unique($this->_constants);
         progress_message('Referenced FKs...');
         $this->refForeignKeysFilters();
@@ -210,10 +208,13 @@ class Model
 
     protected function morphManyFilters()
     {
+        if (!count($this->table->morph_manys)) return;
+        // var_dump($this->table->name.' :: '.json_encode(array_keys($this->table->morph_manys)));
         foreach ($this->table->morph_manys as $name => $morph_table) {
             $this->morphOneFromMM($name, $morph_table);
-            $this->morphManyFromMM($name, $morph_table);
             $this->morphToManyFromMM($name, $morph_table);
+            $this->morphToOneFromMM($name, $morph_table);
+            $this->morphManyFromMM($name, $morph_table);
         }
     }
 
@@ -241,16 +242,23 @@ class Model
 
     protected function morphToManyFromMM(string $name, DBTable $morphTable)
     {
-        if ($morphTable->uniqueMorph($name)) {
-            return;
-        }
+        if ($morphTable->uniqueMorph($name)) return;
         /** @var DBColumn[] $columns */
         $columns = array_filter($morphTable->columns, function(DBColumn $col) use ($name){ return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]); });
         foreach ($columns as $column) {
-            if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) {
-                continue;
-            }
+            if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) continue;
             MorphToMany::fromTable($name, $column, $_table, $this);
+        }
+    }
+
+    protected function morphToOneFromMM(string $name, DBTable $morphTable)
+    {
+        if (!$morphTable->uniqueMorph($name)) return;
+        /** @var DBColumn[] $columns */
+        $columns = array_filter($morphTable->columns, function(DBColumn $col) use ($name){ return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]); });
+        foreach ($columns as $column) {
+            if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) continue;
+            MorphToOne::fromTable($name, $column, $_table, $this);
         }
     }
 
@@ -259,6 +267,7 @@ class Model
         if ($morphTable->uniqueMorph($name)) {
             return;
         }
+        //var_dump($this->table->name.':::'.$name);
         MorphMany::fromTable($name, $morphTable, $this);
     }
 

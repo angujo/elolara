@@ -17,7 +17,7 @@ use Carbon\Carbon;
  *
  * @package Angujo\Elolara\Database
  *
- * @property boolean $isBool
+ * @property boolean $isBoolean
  * @property boolean $isChar
  * @property boolean $isDecimal
  * @property boolean $isFloat
@@ -27,7 +27,7 @@ use Carbon\Carbon;
  * @property boolean $isBigint
  * @property boolean $isTimestamp
  * @property boolean $isTime
- * @property boolean $isVarchar
+ * @property boolean $isString
  * @property boolean $isJson
  *
  */
@@ -52,7 +52,7 @@ class DataType
      *
      * @var int
      */
-    protected $character_length;
+    public $character_length;
 
     protected function __construct(){ }
 
@@ -79,16 +79,17 @@ class DataType
 
     public function phpName($check = false)
     {
+        if (1 === $this->character_length && $this->groupName() == 'tinyint') {
+            return 'boolean';
+        }
         switch ($this->groupName()) {
             case 'bool':
                 return 'boolean';
+            case 'double':
             case 'decimal':
             case 'float':
                 return 'float';
             case 'tinyint':
-                if (1 === $this->character_length) {
-                    return 'boolean';
-                }
             case 'int':
             case 'smallint':
             case 'bigint':

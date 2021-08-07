@@ -27,6 +27,10 @@ return [
      */
     'date_format'             => null,
     /*
+     * Add a validation rule to every column and avail as $rules for each model
+     */
+    'validation_rules'        => true,
+    /*
      * Enable to add @date on each Base Model every time it is run
      * If set to False, @date will be set on first instance
      */

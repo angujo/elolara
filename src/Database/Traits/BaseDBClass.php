@@ -29,9 +29,7 @@ abstract class BaseDBClass
     public function __get($name)
     {
         $name = strtolower($name);
-        if (method_exists($this, $name)) {
-            return $this->{$name}();
-        }
+        if (method_exists($this, $name)) return $this->{$name}();
         return $this->{$name} ?? $this->_props[$name] ?? null;
     }
 

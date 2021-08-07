@@ -24,6 +24,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static boolean column_auto_relate(Boolean $value = null)
  * @method static boolean constant_column_names(Boolean $value = null)
  * @method static boolean date_base(Boolean $value = null)
+ * @method static boolean validation_rules(Boolean $value = null)
  * @method static boolean define_connection(Boolean $value = null)
  * @method static boolean overwrite_models(Boolean $value = null)
  * @method static boolean db_directories(Boolean $value = null)

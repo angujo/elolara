@@ -59,7 +59,7 @@ class DBColumn extends BaseDBClass
     protected function default_value()
     {
         if (!strlen($this->default)) return null;
-        if ($this->data_type->isBool) return var_export($this->default, true);
+        if ($this->data_type->isBoolean) return var_export($this->default, true);
         if ($this->data_type->isJson) return json_decode($this->default, true);
         return $this->default;
     }

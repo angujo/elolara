@@ -35,6 +35,32 @@ class ModelProperty
     public $name;
     public $value;
 
+    public static function forRules(DBTable $table)
+    {
+        $rules = [];
+        foreach ($table->columns as $column) {
+            if ($column->is_auto_incrementing) continue;
+            if (!$column->is_nullable && !strlen($column->default)) $rules[$column->name][] = 'required';
+            if ($column->data_type->isString && $column->data_type->character_length) $rules[$column->name][] = 'max:'.$column->data_type->character_length;
+            if ($column->data_type->isBoolean) $rules[$column->name][] = 'boolean';
+            if ($column->data_type->isJson) $rules[$column->name][] = 'array';
+            if ($column->data_type->isTimestamp) $rules[$column->name][] = 'date';
+            if ($column->data_type->isFloat) $rules[$column->name][] = 'numeric';
+            if ($column->data_type->isInteger) {
+                $rules[$column->name][] = 'integer';
+                $rules[$column->name][] = 'numeric';
+            }
+            if ($column->is_unique && !$column->is_multi_unique) $rules[$column->name][] = 'unique:'.implode(',', [$table->name, $column->name]);
+            if ($column->foreign_key) $rules[$column->name][] = 'exists:'.implode(',', [$column->foreign_key->referenced_table_name, $column->foreign_key->referenced_column_name]);
+        }
+        $me         = new self();
+        $me->var    = '* @var string[]|array';
+        $me->access = 'public';
+        $me->name   = 'rules';
+        $me->value  = array_export($rules);
+        return $me;
+    }
+
     public static function forPrimaryKey(DBTable $table)
     {
         if ((Config::composite_keys() && !($primary = $table->primary_column) && blank($table->primary_columns)) ||

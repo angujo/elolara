@@ -14,7 +14,7 @@ if (!function_exists('array_export')) {
     {
         $v = var_export($arr, !$print);
         if ($v && !$print) {
-            return preg_replace(['/(\s+)\d+(\s+)?\=\>(\s+)?/', '/(,|\()[\n\r]+/',], ['$1', '$1 '], $v);
+            return preg_replace(['/(\s+)(\d+|(\'\w+\'))(\s+)?\=\>(\s+)?/', '/(,|\()[\n\r]+/',], ["\n\r$2 =>", '$1 '], $v);
         }
         return null;
     }
