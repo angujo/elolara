@@ -178,14 +178,20 @@ class ModelProperty
         if (empty($columns)) {
             return null;
         }
-        $keys            = array_map(function(DBColumn $col){ return $col->name; }, $columns);
-        $values          = array_map(function(DBColumn $col){ return $col->default_value; }, $columns);
-        $me              = new self();
-        $me->var         = '* @var array';
-        $me->description = '* Default values for attributes';
-        $me->access      = 'protected';
-        $me->name        = 'attributes';
-        $me->value       = array_export(array_combine($keys, $values));
+        $clearDefaultValue = function($value) use (&$clearDefaultValue){
+            if (is_numeric($value) && $value == intval($value)) return intval($value);
+            if (is_numeric($value)) return floatval($value);
+            if (preg_match('/^(\'|\")(.*?)(\'|\")$/', $value)) return $clearDefaultValue(preg_replace(['/^(\'|\")/', '/(\'|\")$/'], ['', ''], $value));
+            return $value;
+        };
+        $keys              = array_map(function(DBColumn $col){ return $col->name; }, $columns);
+        $values            = array_map(function(DBColumn $col) use (&$clearDefaultValue){ return $clearDefaultValue($col->default_value); }, $columns);
+        $me                = new self();
+        $me->var           = '* @var array';
+        $me->description   = '* Default values for attributes';
+        $me->access        = 'protected';
+        $me->name          = 'attributes';
+        $me->value         = array_export(array_combine($keys, $values));
         return $me;
     }
 
