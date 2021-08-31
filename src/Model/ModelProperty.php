@@ -40,7 +40,9 @@ class ModelProperty
         $rules = [];
         foreach ($table->columns as $column) {
             if ($column->is_auto_incrementing) continue;
-            if (!$column->is_nullable && !strlen($column->default)) $rules[$column->name][] = 'required';
+            if (!$column->is_nullable && !strlen($column->default)) {
+                $rules[$column->name][] = 'required';
+            } else $rules[$column->name][] = 'nullable';
             if ($column->data_type->isString && $column->data_type->character_length) $rules[$column->name][] = 'max:'.$column->data_type->character_length;
             if ($column->data_type->isBoolean) $rules[$column->name][] = 'boolean';
             if ($column->data_type->isJson) $rules[$column->name][] = 'array';

@@ -46,10 +46,7 @@ class FunctionAbs
         }, array_keys($args), $args)));
     }
 
-    protected function autoload()
-    {
-
-    }
+    protected function autoload(){ }
 
     public static function forValidation()
     {
@@ -57,7 +54,7 @@ class FunctionAbs
         $me                     = new self(Config::validation_method());
         $me->phpdoc_description = '* Method to call validation for attributes!';
         $me->content            = <<<'N'
-        if (!property_exists($this, 'rules') || !is_array($this->>rules)) return;
+        if (!property_exists($this, 'rules') || !is_array($this->rules)) return;
         $validator = \Validator::make($this->getAttributes(), $this->rules);
         if($validator->fails()) throw new \Illuminate\Http\Exceptions\HttpResponseException(response()->json($validator->errors()->messages(),422));
 N;
@@ -68,7 +65,7 @@ N;
     {
         if (!Config::validation_rules() || 1 !== preg_match(self::$var_regx, Config::validation_method())) return null;
         $fn                     = Config::validation_method();
-        $me                     = new self('saving', ['callback' ]);
+        $me                     = new self('saving', ['callback']);
         $me->access             = 'public static';
         $me->phpdoc_description = '* @inherit';
         $me->content            = <<<N
