@@ -9,6 +9,7 @@
 namespace Angujo\Elolara;
 
 
+use Faker\Factory;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
@@ -26,6 +27,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static boolean date_base(Boolean $value = null)
  * @method static boolean validation_rules(Boolean $value = null)
  * @method static boolean validate_on_save(Boolean $value = null)
+ * @method static boolean observers(Boolean $value = null)
  * @method static string validation_method(String $value = null)
  * @method static boolean define_connection(Boolean $value = null)
  * @method static boolean overwrite_models(Boolean $value = null)
@@ -45,11 +47,14 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static string model_class($value = null)
  * @method static string date_format($value = null)
  * @method static string base_dir($value = null)
+ * @method static string observers_dir($value = null)
  * @method static string constant_column_prefix(string $value = null)
  * @method static boolean composite_keys($value = null)
  * @method static string eloquent_extension_name(string $value = null)
  * @method static boolean base_abstract($value = null)
  * @method static string namespace($value = null)
+ * @method static string observer_namespace($value = null)
+ * @method static string observer_suffix($value = null)
  * @method static string base_abstract_prefix($value = null)
  * @method static string pivot_name_regex($value = null)
  * @method static string schema_name()
@@ -72,6 +77,8 @@ class Config
     public static $laravel_primitives = ['array', 'boolean', 'collection', 'date', 'datetime', 'decimal:(\d+)', 'double', 'encrypted', 'encrypted:array', 'encrypted:collection', 'encrypted:object', 'float', 'integer', 'object', 'real', 'string', 'timestamp',];
     /** @var array|string[] */
     private $values = [];
+
+    private static $vsave_name;
 
     protected function __construct()
     {
@@ -286,5 +293,15 @@ class Config
         }
         $this->values['type_casts'] = $n_casts;
         return $this;
+    }
+
+    public static function validateSaveName()
+    {
+        if (!self::$vsave_name) {
+            $fake = Factory::create();
+            $fake->seed(12345);
+            $w = 'vsave_'.$fake->word;
+        }
+        return self::$vsave_name ?: (self::$vsave_name = \Str::camel($w));
     }
 }

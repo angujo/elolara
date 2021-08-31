@@ -18,8 +18,15 @@ class {name}
 {
     /**
      * Method to get morph relation(s)
-     *
-     * @param null|ElolaraModel|string $class
+    *
+    * Can be used directly as;
+    * Relation::morphMap(App\Models\Extensions\RelationMorphMap::getMaps());
+    * OR
+    * By extending with own custom morphs;
+    * Relation::morphMap(array_merge(App\Models\Extensions\RelationMorphMap::getMaps(),[...],[...],...));
+    * Recommended to be used within the [ AppServiceProvider ] -> [ boot ] method
+    *
+    * @param null|ElolaraModel|string $class
      *
      * @return false|string[]|string
      */
@@ -34,5 +41,15 @@ class {name}
             return array_search($class, $morphs);
         }
         return $morphs;
+    }
+
+    /**
+    * Method to load all observers within for elolara
+    * Should be called within the [ AppServiceProvider ] -> [ boot ] method
+    * Can be called AS IS i.e. App\Models\Extensions\RelationMorphMap::observers()
+    */
+    public static function observers()
+    {
+        {observers}
     }
 }

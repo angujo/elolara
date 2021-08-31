@@ -10,27 +10,12 @@ namespace Angujo\Elolara\Model;
 
 
 use Angujo\Elolara\Config;
-use Angujo\Elolara\Database\DBColumn;
-use Angujo\Elolara\Database\DBForeignConstraint;
 use Angujo\Elolara\Database\DBTable;
-use Angujo\Elolara\Model\Relations\BelongsTo;
-use Angujo\Elolara\Model\Relations\BelongsToMany;
-use Angujo\Elolara\Model\Relations\HasMany;
-use Angujo\Elolara\Model\Relations\HasManyThrough;
-use Angujo\Elolara\Model\Relations\HasOne;
-use Angujo\Elolara\Model\Relations\HasOneThrough;
-use Angujo\Elolara\Model\Relations\MorphedByMany;
-use Angujo\Elolara\Model\Relations\MorphMany;
-use Angujo\Elolara\Model\Relations\MorphOne;
-use Angujo\Elolara\Model\Relations\MorphTo;
-use Angujo\Elolara\Model\Relations\MorphToMany;
 use Angujo\Elolara\Model\Traits\HasMetaData;
 use Angujo\Elolara\Model\Traits\HasTemplate;
 use Angujo\Elolara\Model\Traits\ImportsClass;
 use Angujo\Elolara\Model\Traits\UsesTraits;
-use Angujo\Elolara\Util;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class Model
@@ -82,7 +67,7 @@ class CoreModel
         $me = new self();
         if (Config::validation_rules()) {
             $me->_functions[] = FunctionAbs::forValidation();
-            if (Config::validate_on_save()) $me->_functions[] = FunctionAbs::forValidationSave();
+            if (Config::validate_on_save() && !Config::observers()) $me->_functions[] = FunctionAbs::forValidationSave();
         }
         return $me;
     }

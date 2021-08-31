@@ -16,6 +16,7 @@ use Angujo\Elolara\Database\DBTable;
 use Angujo\Elolara\Model\CoreModel;
 use Angujo\Elolara\Model\Model;
 use Angujo\Elolara\Model\MorphModel;
+use Angujo\Elolara\Model\ObserverModel;
 use Angujo\Elolara\Model\SchemaModel;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Database\ConnectionInterface;
@@ -118,6 +119,11 @@ class Factory
         if (!file_exists($md = Config::models_dir())) mkdir($md, 0777, true);
         if (!is_writable($md)) throw new \Exception("'{$md}' is not writeable!");
 
+        if (Config::observers() || Config::validate_on_save()) {
+            if (!file_exists($md = Config::observers_dir())) mkdir($md, 0777, true);
+            if (!is_writable($md)) throw new \Exception("'{$md}' is not writeable!");
+        }
+
         if (!file_exists($cd = Config::extensions_dir())) mkdir($cd, 0777, true);
         if (!is_writable($cd)) throw new \Exception("'{$cd}' is not writeable!");
 
@@ -177,7 +183,7 @@ class Factory
                 $m[$name][preg_replace('/^(\w+)(id|type)$/', '$2', $column->name)] = $column->name;
             }
             return array_filter($m, function($f){ return 3 === count($f); });
-        }, $tables), 'filled');
+        }, $tables),           'filled');
         $output = [];
         foreach ($morphs as $table_name => $_morphs) {
             foreach ($_morphs as $morph => $entries) {
@@ -220,6 +226,7 @@ class Factory
     protected function writeModel(Model $model)
     {
         $path = (Config::base_abstract() && $model->base_model ? Config::abstracts_dir() : Config::models_dir()).$model->name.'.php';
+        $this->writeObserverModel($model);
         if (!Config::overwrite_models() && false === $model->base_model && file_exists($path)) return;
         file_put_contents($path, (string)$model);
     }
@@ -234,6 +241,21 @@ class Factory
     {
         $model = SchemaModel::load();
         $path  = Config::extensions_dir().$model->name.'.php';
+        file_put_contents($path, (string)$model);
+    }
+
+    /**
+     * Set the parent Model for all
+     * We'll always overwrite depending on config changes.
+     * If user want's to update, then a custom file can be set as model_class in config
+     * Parent changes can be pushed there.
+     */
+    protected function writeObserverModel(Model $model)
+    {
+        if ($model->base_model) return;
+        $model = ObserverModel::load($model);
+        $path  = Config::observers_dir().DIRECTORY_SEPARATOR.$model->name.'.php';
+        if (file_exists($path)) return;
         file_put_contents($path, (string)$model);
     }
 

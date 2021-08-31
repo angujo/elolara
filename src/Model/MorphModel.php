@@ -47,6 +47,7 @@ class MorphModel
     public $morphs = '';
     public $namespace;
     public $name;
+    public $observers;
     public $spacer = "             ";
 
     protected function __construct()
@@ -73,10 +74,27 @@ class MorphModel
         return $this;
     }
 
+    /**
+     * @param DatabaseSchema $schema
+     *
+     * @return $this
+     */
+    protected function setObservers(DatabaseSchema $schema)
+    {
+        $holder = [];
+        foreach ($schema->tables as $table) {
+            $model_class          = '\\'.Config::models_namespace().'\\'.Util::className($table->name);
+            $observer_class       = '\\'.Config::observer_namespace().'\\'.class_name(Util::className($table->name).'_'.Config::observer_suffix());
+            $holder[$table->name] = "{$model_class}::observe({$observer_class}::class);\n";
+        }
+        $this->observers = implode('        ', $holder);
+        return $this;
+    }
+
     public static function core(DatabaseSchema $schema)
     {
         $me = new self();
         if (Config::db_directories()) $me->name = Util::className($schema->name.'_morph_map');
-        return $me->setMorphs($schema);
+        return $me->setMorphs($schema)->setObservers($schema);
     }
 }

@@ -41,6 +41,27 @@ return [
      */
     'validate_on_save'        => true,
     /*
+     * Set if you want observers to be set up.
+     * If [validate_on_save] = TRUE, [observers] will be assumed to be TRUE, irrespective of value below.
+     */
+    'observers'               => true,
+    /*
+     * Directory path to put the models' observers
+     * Observers are created once and not overwritten.
+     * If validation enabled with option of [validate_on_save] set to TRUE,
+     * the method will be initiated inside the observer's "saving" method.
+     */
+    'observers_dir'           => app_path('Observers'),
+    /*
+     * Namespace for the observers
+     */
+    'observer_namespace'               => 'App\Observers',
+    /*
+     * Suffix for the observer's file and class name
+     * E.g. for model User + [observer_suffix='Observer'] = UserObserver[.php]
+     */
+    'observer_suffix'               => 'Observer',
+    /*
      * Enable to add @date on each Base Model every time it is run
      * If set to False, @date will be set on first instance
      */
@@ -135,6 +156,10 @@ return [
      */
     'base_dir'                => app_path('Models'),
     /*
+     * Namespace for the models
+     */
+    'namespace'               => 'App\Models',
+    /*
      * Enable composite keys in laravel
      * Currently on testing
      * Allows usage of Model::find($arr=[]) and multiple pri keys
@@ -158,10 +183,6 @@ return [
      * Default: Base
      */
     'base_abstract_prefix'    => 'Base',
-    /*
-     * Namespace for the models
-     */
-    'namespace'               => 'App\Models',
     /*
      * If you wish to rename pivot tables in belongsToMany relation,
      * Set regex for naming pattern below. The name should be in teh table's comment

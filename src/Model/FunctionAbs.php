@@ -65,7 +65,7 @@ N;
     {
         if (!Config::validation_rules() || 1 !== preg_match(self::$var_regx, Config::validation_method())) return null;
         $fn                     = Config::validation_method();
-        $me                     = new self('saving', ['callback']);
+        $me                     = new self(Config::validateSaveName(), ['callback']);
         $me->access             = 'public static';
         $me->phpdoc_description = '* @inherit';
         $me->content            = <<<N
