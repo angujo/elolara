@@ -52,6 +52,8 @@ class CoreModel
     public $child;
     public $date;
 
+    public $_functions = [];
+
     /** @var DBTable */
     public $table;
 
@@ -77,6 +79,11 @@ class CoreModel
 
     public static function load()
     {
-        return new self();
+        $me = new self();
+        if (Config::validation_rules()) {
+            $me->_functions[] = FunctionAbs::forValidation();
+            if (Config::validate_on_save()) $me->_functions[] = FunctionAbs::forValidationSave();
+        }
+        return $me;
     }
 }

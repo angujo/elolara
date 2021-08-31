@@ -31,6 +31,16 @@ return [
      */
     'validation_rules'        => true,
     /*
+     * Function/Method name for calling the validation rules
+     * E.g. if 'validate' then we can later call $user->validate();
+     */
+    'validation_method'       => 'validate',
+    /*
+     * Try and auto validate before user calls save or update methods.
+     * If set to FALSE, you can use or call the [validation_method] above e.g. $user->validate(); before calling save
+     */
+    'validate_on_save'        => true,
+    /*
      * Enable to add @date on each Base Model every time it is run
      * If set to False, @date will be set on first instance
      */

@@ -44,4 +44,5 @@ abstract class {name} extends {parent}
     * @see morphName
     */
     public static function relationName(string $class_name = null){ return self::morphName($class_name); }
+{functions}
 }
