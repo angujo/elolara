@@ -57,8 +57,9 @@ class FunctionAbs
         $me                     = new self(Config::validation_method());
         $me->phpdoc_description = '* Method to call validation for attributes!';
         $me->content            = <<<'N'
-        if (!property_exists($this, 'rules')) return;
-        \Validator::make($this->getAttributes(), $this->rules)->validate();
+        if (!property_exists($this, 'rules') || !is_array($this->>rules)) return;
+        $validator = \Validator::make($this->getAttributes(), $this->rules);
+        if($validator->fails()) throw new \Illuminate\Http\Exceptions\HttpResponseException(response()->json($validator->errors()->messages(),422));
 N;
         return $me;
     }
