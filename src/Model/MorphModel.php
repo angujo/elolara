@@ -56,13 +56,23 @@ class MorphModel
         $this->name      = Config::super_morph_name();
     }
 
-    protected function setMorphs(DatabaseSchema $schema)
+    protected function schemaRun(DatabaseSchema $schema)
     {
-        $holder = [];
+        $morph_holder = $obs_holder = [];
         foreach ($schema->tables as $table) {
-            $holder[$table->name] = var_export(Config::models_namespace().'\\'.Util::className($table->name), true);
+            # Hold for morphRel
+            $morph_holder[$table->name] = var_export(Config::models_namespace().'\\'.Util::className($table->name), true);
+
+            # Run for observers
+            $model_class              = '\\'.Config::models_namespace().'\\'.Util::className($table->name);
+            $observer_class           = '\\'.Config::observer_namespace().'\\'.class_name(Util::className($table->name).'_'.Config::observer_suffix());
+            $obs_holder[$table->name] = "{$model_class}::observe({$observer_class}::class);\n";
         }
-        $max          = max(array_map(function($k){ return strlen($k); }, array_keys($holder)));
+        # Compile observers
+        $this->observers = implode('        ', $obs_holder);
+
+        # Compile for morphs
+        $max          = max(array_map(function($k){ return strlen($k); }, array_keys($morph_holder)));
         $this->morphs = implode(",\n", array_map(function($k, $v) use ($max){
             $sp = '';
             for ($i = 0; $i < ($max - strlen($k)); $i++) {
@@ -70,24 +80,7 @@ class MorphModel
             }
             $k = var_export($k, true).$sp;
             return "{$this->spacer}{$k} => {$v}";
-        }, array_keys($holder), array_values($holder)));
-        return $this;
-    }
-
-    /**
-     * @param DatabaseSchema $schema
-     *
-     * @return $this
-     */
-    protected function setObservers(DatabaseSchema $schema)
-    {
-        $holder = [];
-        foreach ($schema->tables as $table) {
-            $model_class          = '\\'.Config::models_namespace().'\\'.Util::className($table->name);
-            $observer_class       = '\\'.Config::observer_namespace().'\\'.class_name(Util::className($table->name).'_'.Config::observer_suffix());
-            $holder[$table->name] = "{$model_class}::observe({$observer_class}::class);\n";
-        }
-        $this->observers = implode('        ', $holder);
+        }, array_keys($morph_holder), array_values($morph_holder)));
         return $this;
     }
 
@@ -95,6 +88,6 @@ class MorphModel
     {
         $me = new self();
         if (Config::db_directories()) $me->name = Util::className($schema->name.'_morph_map');
-        return $me->setMorphs($schema)->setObservers($schema);
+        return $me->schemaRun($schema);
     }
 }
