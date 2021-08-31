@@ -28,7 +28,12 @@ class HasMany extends RelationshipFunction
     public static function fromForeignKey(DBForeignConstraint $foreignKey, Model $model)
     {
         $name = $foreignKey->table->relation_name_plural;
-        if ($model->functionExist($name)) $name = function_name_plural(\Str::singular(preg_replace('/([a-zA-Z0-9_]+)_id$/', '$1', $foreignKey->column_name)).'_'.$foreignKey->table_name);
+        if ($model->functionExist($name)) {
+            if ($foreignKey->column->comment && 1 === preg_match('/\$\{[a-zA-Z0-9_]+\}/', $foreignKey->column->comment, $matches)) {
+                $name = $matches[1];
+            } else $name = \Str::singular(preg_replace('/([a-zA-Z0-9_]+)_id$/', '$1', $foreignKey->column_name)).'_'.$foreignKey->table_name;
+            $name = function_name_plural($name);
+        }
         $me               = new self($model->name);
         $me->name         = $name;
         $me->_relations[] = $foreignKey->table->fqdn;
@@ -40,7 +45,7 @@ class HasMany extends RelationshipFunction
         $me->addImport(Collection::class);
         $me->autoload();
 
-       return $model->setFunction($me);
+        return $model->setFunction($me);
     }
 
     public function keyRelations($source)
