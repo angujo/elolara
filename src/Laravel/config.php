@@ -55,12 +55,12 @@ return [
     /*
      * Namespace for the observers
      */
-    'observer_namespace'               => 'App\Observers',
+    'observer_namespace'      => 'App\Observers',
     /*
      * Suffix for the observer's file and class name
      * E.g. for model User + [observer_suffix='Observer'] = UserObserver[.php]
      */
-    'observer_suffix'               => 'Observer',
+    'observer_suffix'         => 'Observer',
     /*
      * Enable to add @date on each Base Model every time it is run
      * If set to False, @date will be set on first instance
@@ -110,6 +110,22 @@ return [
      * The reset will be excluded
      */
     'only_tables'             => [],
+    /*
+     * In Laravel 7+ a User table comes with setup and extends Authenticatable
+     * This voids IDE intellisense on properties and relations
+     * Setting User as Trait is way of trying to circumvent this.
+     *
+     * Enabling this prepares the system on availing traits for models
+     * NOTE: Ensure to resolve any conflict that are already resolved in Trait
+     */
+    'model_trait'              => true,
+
+    /*
+     * Only applies when [model_trait] is TRUE
+     * Assist in getting the name of the tables to be set as traits
+     * All Column constants are not attainable with this
+     */
+    'trait_model_tables'             => ['users'],
     /*
      * While naming relations you need to select the order in which the names will be picked.
      * Ordering should start with most preferred.

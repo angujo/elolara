@@ -104,9 +104,9 @@ class Factory
             self::$BAR->advance();
             self::$BAR->setMessage("Writing Model...");
             if (Config::base_abstract()) {
-                $this->writeModel(Model::fromTable($table, true)->setConnection($this->con_name));
-                $this->writeModel(Model::fromTable($table, false));
-            } else  $this->writeModel(Model::fromTable($table, true)->setConnection($this->con_name));
+                $this->writeBaseModel($table);
+                $this->writeModel(Model::forCallableTable($table));
+            } else  $this->writeBaseModel($table);
             self::$BAR->advance();
         }
         self::$BAR->setFormat("%current%/%max% [%bar%] %percent:3s%% %message%");
@@ -221,6 +221,13 @@ class Factory
             $mix[$pivot_name] = array_combination($mix[$pivot_name], 2);
         }
         return $mix;
+    }
+
+    protected function writeBaseModel(DBTable $table)
+    {
+        if (Config::model_trait() && in_array($table->name, Config::trait_model_tables())) {
+            $this->writeModel(Model::forTraitTable($table)->setConnection($this->con_name));
+        } else $this->writeModel(Model::forBaseTable($table)->setConnection($this->con_name));
     }
 
     protected function writeModel(Model $model)

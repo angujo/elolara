@@ -56,6 +56,7 @@ class Model
     public $child;
     public $date;
     public $base_model    = false;
+    public $trait_model   = false;
 
     /** @var DBTable */
     public $table;
@@ -73,36 +74,64 @@ class Model
         }
     }
 
+    public static function forTraitTable(DBTable $table)
+    {
+        $me                = new self($table);
+        $me->base_model    = $me->trait_model = true;
+        $me->template_name = 'trait-model';
+        $me->runTable();
+        return $me;
+    }
+
+    public static function forBaseTable(DBTable $table)
+    {
+        $me                = new self($table);
+        $me->base_model    = true;
+        $me->template_name = 'abstract-model';
+        $me->runTable();
+        return $me;
+    }
+
+    public static function forCallableTable(DBTable $table)
+    {
+        return (new self($table))->runTable();
+    }
+
     public static function fromTable(DBTable $table, bool $for_base = null)
     : Model
     {
         $me             = new self($table);
-        $me->namespace  = Config::models_namespace();
-        $me->name       = Util::className($table->name);
         $me->base_model = $for_base;
-        if (true === $for_base) {
-            $me->abstract      = 'abstract ';
-            $me->template_name = 'abstract-model';
-            $me->namespace     = Config::abstracts_namespace();
-            $me->name          = Util::baseClassName($table->name);
-            $me->child         = Util::className($table->name);
-            if (Config::db_directories()) {
-                $me->parent = basename(Config::schema_model_name());
-                $me->addImport(Config::schema_model_fqdn());
-            } else {
-                $me->parent = basename(Config::super_model_name());
-                $me->addImport(Config::super_model_fqdn());
-            }
-        } elseif (false === $for_base) {
-            $me->addImport($pns = Config::abstracts_namespace().'\\'.Util::baseClassName($table->name));
-            $me->parent = basename($pns);
-        }
-        if (false !== $for_base) {
-            $me->addTrait(...\Arr::wrap(Config::table_traits()[$table->name] ?? []));
-            progress_message('Starting table processing...');
-            $me->processTable();
-        }
+        $me->runTable();
         return $me;
+    }
+
+    public function runTable()
+    {
+        $this->namespace = Config::models_namespace();
+        $this->name      = Util::className($this->table->name);
+        if (true === $this->base_model) {
+            $this->abstract  = 'abstract ';
+            $this->namespace = Config::abstracts_namespace();
+            $this->name      = Util::baseClassName($this->table->name);
+            $this->child     = Util::className($this->table->name);
+            if (Config::db_directories()) {
+                $this->parent = basename(Config::schema_model_name());
+                $this->addImport(Config::schema_model_fqdn());
+            } else {
+                $this->parent = basename(Config::super_model_name());
+                $this->addImport(Config::super_model_fqdn());
+            }
+        } elseif (false === $this->base_model) {
+            $this->addImport($pns = Config::abstracts_namespace().'\\'.Util::baseClassName($this->table->name));
+            $this->parent = basename($pns);
+        }
+        if (false !== $this->base_model) {
+            $this->addTrait(...\Arr::wrap(Config::table_traits()[$this->table->name] ?? []));
+            progress_message('Starting table processing...');
+            $this->processTable();
+        }
+        return $this;
     }
 
     protected function processTable()
@@ -117,7 +146,7 @@ class Model
                     $this->_constants[] = ModelConst::fromColumn($column, Config::LARAVEL_TS_DELETED);
                 }
             }
-            if (Config::constant_column_names()) {
+            if (Config::constant_column_names() && !$this->trait_model) {
                 $this->_constants[] = $const = ModelConst::fromColumn($column);
                 if ($const) $this->addImport(...$const->imports());
             }
@@ -137,9 +166,11 @@ class Model
         $this->_properties[] = ModelProperty::forKeyType($this->table);
         $this->_properties[] = ModelProperty::forTimestamps($this->table);
         $this->_properties[] = ModelProperty::forDateFormat();
-        [$cre, $upd] = ModelConst::forTimestamps($this->table);
-        $this->_constants[]  = $cre;
-        $this->_constants[]  = $upd;
+        if (!$this->trait_model) {
+            [$cre, $upd] = ModelConst::forTimestamps($this->table);
+            $this->_constants[] = $cre;
+            $this->_constants[] = $upd;
+        }
         $this->_properties[] = ModelProperty::forDates($this->table);
         $this->_properties[] = ModelProperty::forAttributes($this->table);
         $this->_properties[] = ModelProperty::forFillables($this->table);
