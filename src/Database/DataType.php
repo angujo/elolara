@@ -54,7 +54,7 @@ class DataType
      */
     public $character_length;
 
-    protected function __construct(){ }
+    protected function __construct() { }
 
     public static function fromColumn(DBColumn $column)
     {
@@ -112,9 +112,9 @@ class DataType
         }
     }
 
-    protected function groupName()
+    protected function groupName(string $_type = null)
     {
-        $type = explode(' ', strtolower(trim($this->type)));
+        $type = explode(' ', strtolower(trim($_type ?: $this->type)));
         if (count($type) == 2 && 0 === strcasecmp('unsigned', $type[1])) {
             $type = [$type[0]];
         }
@@ -201,7 +201,7 @@ class DataType
             case 'enum':
             case 'set':
             default:
-                return strtolower(trim($type));
+                return !$_type && $this->column_type ? $this->groupName($this->column_type) : strtolower(trim($type));
         }
     }
 }

@@ -22,6 +22,7 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @package Angujo\Elolara
  *
  * @method static boolean full_namespace_import(Boolean $value = null)
+ * @method static boolean add_table_schema(Boolean $value = null)
  * @method static boolean column_auto_relate(Boolean $value = null)
  * @method static boolean constant_column_names(Boolean $value = null)
  * @method static boolean date_base(Boolean $value = null)

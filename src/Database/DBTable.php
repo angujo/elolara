@@ -59,6 +59,14 @@ class DBTable extends BaseDBClass
         $this->_props['many_through'] = [];
     }
 
+    /**
+     * @return DatabaseSchema
+     */
+    public function databaseSchema(): DatabaseSchema
+    {
+        return $this->db;
+    }
+
     protected function relation_name_singular()
     {
         return function_name_single($this->name);

@@ -283,19 +283,8 @@ class DBMS
                             ->on('rt.oid', '=', 'uc.conrelid')
                             ->on('uc.contype', '=', \DB::raw('any (array[\'u\'::character,\'p\'::character])'));
                     });
-                /*$query = $this->connection->table('information_schema.table_constraints as tc')
-                    ->select('tc.constraint_name as name', 'tc.table_name', 'kcu.column_name',
-                        'kcu.referenced_table_name', 'kcu.referenced_column_name')
-                    ->join('information_schema.key_column_usage as kcu', function (JoinClause $join) {
-                        $join->on('kcu.constraint_schema', '=', 'tc.constraint_schema')
-                            ->on('tc.table_name', '=', 'kcu.table_name')
-                            ->on('tc.constraint_name', '=', 'kcu.constraint_name');
-                    })
-                    ->where('tc.constraint_type', 'FOREIGN KEY')
-                    ->where('tc.table_schema', $this->schema->name);*/
                 if (filled($this->exclude_tables)) $query->whereNotIn('rt.relname', $this->exclude_tables)->whereNotIn('t.relname', $this->exclude_tables);
                 if (filled($this->only_tables)) $query->whereIn('rt.relname', $this->only_tables)->whereIn('t.relname', $this->only_tables);
-                // ->groupBy(['tc.TABLE_NAME', 'tc.CONSTRAINT_NAME'])
                 $list = $query->get()->toArray();
                 break;
         }
