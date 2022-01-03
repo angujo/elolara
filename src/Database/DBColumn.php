@@ -98,7 +98,7 @@ class DBColumn extends BaseDBClass
 
     protected function is_primary()
     {
-        return !$this->is_nullable && 0 === stripos($this->column_key, 'pri') && !empty($this->db->getPrimaryConstraint($this->table_name, null, $this->name));
+        return !$this->is_nullable && !empty($this->db->getPrimaryConstraint($this->table_name, null, $this->name));
     }
 
     protected function is_multi_primary()
