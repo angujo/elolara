@@ -257,8 +257,8 @@ class DBMS
                 break;
             case DBDriver::PGSQL:
                 $query = $this->connection->table('pg_catalog.pg_constraint  as c')
-                    ->select('ra.attnum as ordinal', 'rn.nspname as schema_name', 'rt.relname as table_name', 'ra.attname as column_name', 'c.conname as "name"' .
-                        'n.nspname as referenced_schema_name', 't.relname as referenced_table_name', 'a.attname as referenced_column_name')
+                    ->select('ra.attnum as ordinal', 'rn.nspname as schema_name', 't.relname as table_name', 'a.attname as column_name', 'c.conname as name',
+                        'n.nspname as referenced_schema_name', 'rt.relname as referenced_table_name', 'ra.attname as referenced_column_name')
                     ->join('pg_catalog.pg_namespace as n', function (JoinClause $clause) {
                         $clause->on('n.oid', '=', 'c.connamespace')
                             ->where('n.nspname', $this->schema->name);
@@ -269,10 +269,7 @@ class DBMS
                             ->on('a.attnum', '=', \DB::raw('any (c.conkey)'));
                     })
                     ->join('pg_catalog.pg_class as rt', 'rt.oid', '=', 'c.confrelid')
-                    ->join('pg_catalog.pg_namespace as rn', function (JoinClause $clause) {
-                        $clause->on('rn.oid', '=', 'rt.relnamespace')
-                            ->where('rn.nspname', $this->schema->name);
-                    })
+                    ->join('pg_catalog.pg_namespace as rn', 'rn.oid', '=', 'n.oid')
                     ->join('pg_catalog.pg_attribute as ra', function (JoinClause $clause) {
                         $clause->on('ra.attrelid', '=', 'rt.oid')
                             ->on('ra.attnum', '=', \DB::raw('any (c.confkey)'));

@@ -178,7 +178,7 @@ class Factory
 
                 $name = preg_replace('/^(\w+)(_id|_type)$/', '$1', $column->name);
                 if (preg_match('/^(\w+)_type$/', $column->name)) {
-                    $m[$name]['tables'] = array_filter(preg_split('/(\s+)?,(\s+)?/', $column->comment), function($n){ return trim($n) && preg_match('/^([a-zA-Z][a-zA-Z0-9_]+)$/', $n); });
+                    $m[$name]['tables'] = $column->comment->morphTables();
                 }
                 $m[$name][preg_replace('/^(\w+)(id|type)$/', '$2', $column->name)] = $column->name;
             }

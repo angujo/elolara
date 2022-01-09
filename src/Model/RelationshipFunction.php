@@ -59,9 +59,10 @@ abstract class RelationshipFunction implements RelationKeysInterface
         if (empty($this->_relations)) {
             return;
         }
-        $this->classes = implode(', ', array_map(function($cl){ return class_path($cl, true, true); }, $this->_relations));
+        $this->classes =
+            implode(', ', array_map(function ($cl) { return class_path($cl, true, true); }, $this->_relations));
         if (is_array($this->keys)) {
-            $this->keys = implode(', ', array_map(function($k){ return var_export($k, true); }, $this->keys));
+            $this->keys = implode(', ', array_map(function ($k) { return var_export($k, true); }, $this->keys));
         }
         $this->keys = $this->keys ? ", {$this->keys}" : '';
     }
@@ -69,38 +70,49 @@ abstract class RelationshipFunction implements RelationKeysInterface
     protected function autoload()
     {
         $relations = array_unique(array_merge($this->_relations, $this->implied_relations));
-        $this->addImport(...array_filter($relations, function($cl){
-            return 0 !== strcasecmp(basename($cl), $this->model_class) && (Config::full_namespace_import() || Config::base_abstract() || (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
+        $this->addImport(...array_filter($relations, function ($cl) {
+            return 0 !== strcasecmp(basename($cl), $this->model_class) &&
+                   (Config::full_namespace_import() || Config::base_abstract() ||
+                    (!Config::full_namespace_import() && false === stripos($cl, Config::namespace())));
         }));
     }
 
     /**
-     * @param Model                        $model
+     * @param Model $model
      * @param DBColumn|DBForeignConstraint $relation
-     * @param DBTable|null                 $parentTable
-     * @param DBTable|null                 $endTable
+     * @param DBTable|null $parentTable
+     * @param DBTable|null $endTable
      */
     protected function columnarRelationName(Model $model, $relation, DBTable $parentTable = null, DBTable $endTable = null)
     {
-        if (!is_object($relation) || !(is_a($relation, DBColumn::class) || is_a($relation, DBForeignConstraint::class))) {
+        if (!is_object($relation) ||
+            !(is_a($relation, DBColumn::class) || is_a($relation, DBForeignConstraint::class))) {
             return null;
         }
         switch (static::class) {
             case Relations\HasOne::class:
-                if (in_array($relation->column_name, [\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID, $relation->referenced_table->foreign_column_name])) {
+                if (in_array($relation->column_name, [\Str::plural($relation->referenced_table_name) . '_' .
+                                                      Config::LARAVEL_ID, $relation->referenced_table->foreign_column_name])) {
                     return function_name_single($relation->table_name);
                 }
-                return function_name_single(preg_replace(['/'.$relation->referenced_table->foreign_column_name.'$/', '/'.\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID.'$/'], '', $relation->column_name).'_'.$relation->table_name);
+                return function_name_single($relation->table_name . '_' .
+                                            preg_replace('/_' . Config::LARAVEL_ID . '$/', '', $relation->column_name));
+            // return function_name_single(preg_replace(['/'.$relation->referenced_table->foreign_column_name.'$/', '/'.\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID.'$/'], '', $relation->column_name).'_'.$relation->table_name);
             case HasMany::class:
-                if (in_array($relation->column_name, [\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID, $relation->referenced_table->foreign_column_name])) {
+                if (in_array($relation->column_name, [\Str::plural($relation->referenced_table_name) . '_' .
+                                                      Config::LARAVEL_ID, $relation->referenced_table->foreign_column_name])) {
                     return $relation->table->relation_name_plural;
                 }
-                return function_name_plural(preg_replace(['/'.$relation->referenced_table->foreign_column_name.'$/', '/'.\Str::plural($relation->referenced_table_name).'_'.Config::LARAVEL_ID.'$/'], '', $relation->column_name).'_'.$relation->table_name);
+                return function_name_plural(preg_replace(['/' . $relation->referenced_table->foreign_column_name .
+                                                          '$/', '/' . \Str::plural($relation->referenced_table_name) .
+                                                                '_' . Config::LARAVEL_ID .
+                                                                '$/'], '', $relation->column_name) . '_' .
+                                            $relation->table_name);
         }
         return null;
     }
 
-    public static function relationName(DBForeignConstraint $constraint, array &$loads = [], bool $reference = false, $singular = true)
+    public static function relationName(DBForeignConstraint $constraint, bool $reference = false, $singular = true, array &$loads = [])
     {
         $sequence = Config::relation_naming();
         $relation = $singular ? 'relation_name_singular' : 'relation_name_plural';

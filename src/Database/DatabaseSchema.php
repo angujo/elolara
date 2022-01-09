@@ -19,11 +19,11 @@ use Illuminate\Database\Query\JoinClause;
  *
  * @package Angujo\Elolara\Database
  *
- * @property string                      $name
- * @property array|DBTable[]             $tables
- * @property array|DBColumn[]            $columns
+ * @property string $name
+ * @property array|DBTable[] $tables
+ * @property array|DBColumn[] $columns
  * @property array|DBPrimaryConstraint[] $primary_constraints
- * @property array|DBUniqueConstraint[]  $unique_constraints
+ * @property array|DBUniqueConstraint[] $unique_constraints
  * @property array|DBForeignConstraint[] $foreign_constraints
  */
 class DatabaseSchema extends BaseDBClass
@@ -36,13 +36,25 @@ class DatabaseSchema extends BaseDBClass
         parent::__construct(['name' => $name]);
     }
 
+    /**
+     * @param string $table_name
+     * @param string|null $name
+     * @param string|null $column_name
+     * @return DBUniqueConstraint|DBUniqueConstraint[]|array<int, DBUniqueConstraint>|null
+     */
     public function getUniqueConstraint(string $table_name, string $name = null, string $column_name = null)
     {
         if (!$column_name && !$name) {
-            return array_filter($this->unique_constraints, function(DBUniqueConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
+            return array_filter($this->unique_constraints, function (DBUniqueConstraint $foreign) use ($table_name) {
+                return 0 === strcasecmp($table_name, $foreign->table_name);
+            });
         }
         if ($column_name && is_string($column_name)) {
-            return array_filter($this->unique_constraints, function(DBUniqueConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && in_array($column_name, $foreign->column_names); });
+            return array_filter($this->unique_constraints,
+                function (DBUniqueConstraint $unique_constraint) use ($table_name, $column_name) {
+                    return 0 === strcasecmp($table_name, $unique_constraint->table_name) &&
+                           in_array($column_name, $unique_constraint->column_names);
+                });
         }
         return $this->unique_constraints["{$table_name}.{$name}"] ?? null;
     }
@@ -50,20 +62,25 @@ class DatabaseSchema extends BaseDBClass
     public function getPrimaryConstraint(string $table_name, string $name = null, string $column_name = null)
     {
         if (!$column_name && !$name) {
-            return array_filter($this->primary_constraints, function(DBPrimaryConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
+            return array_filter($this->primary_constraints, function (DBPrimaryConstraint $foreign) use ($table_name) {
+                return 0 === strcasecmp($table_name, $foreign->table_name);
+            });
         }
         if ($column_name) {
-            return array_filter($this->primary_constraints, function(DBPrimaryConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && in_array($column_name, $foreign->column_names); });
+            return array_filter($this->primary_constraints, function (DBPrimaryConstraint $foreign) use ($table_name, $column_name) {
+                return 0 === strcasecmp($table_name, $foreign->table_name) &&
+                       in_array($column_name, $foreign->column_names);
+            });
         }
         return $this->primary_constraints["{$table_name}.{$name}"] ?? null;
     }
 
     public function getReferencingForeignKeys(string $table_name, string $column_name = null)
     {
-        if ($column_name && is_string($column_name)) {
-            return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
-        }
-        return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->referenced_table_name); });
+        return array_filter($this->foreign_constraints, function (DBForeignConstraint $foreign) use ($table_name, $column_name) {
+            return 0 === strcasecmp($table_name, $foreign->referenced_table_name) &&
+                   (!$column_name || 0 === strcasecmp($column_name, $foreign->referenced_column_name));
+        });
     }
 
     /**
@@ -76,10 +93,15 @@ class DatabaseSchema extends BaseDBClass
     public function getForeignKey(string $table_name, ?string $name = null, ?string $column_name = null)
     {
         if (!$column_name && (!$name || !is_string($name))) {
-            return array_filter($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name){ return 0 === strcasecmp($table_name, $foreign->table_name); });
+            return array_filter($this->foreign_constraints, function (DBForeignConstraint $foreign) use ($table_name) {
+                return 0 === strcasecmp($table_name, $foreign->table_name);
+            });
         }
         if ($column_name && is_string($column_name)) {
-            return \Arr::first($this->foreign_constraints, function(DBForeignConstraint $foreign) use ($table_name, $column_name){ return 0 === strcasecmp($table_name, $foreign->table_name) && 0 === strcasecmp($column_name, $foreign->column_name); });
+            return \Arr::first($this->foreign_constraints, function (DBForeignConstraint $foreign) use ($table_name, $column_name) {
+                return 0 === strcasecmp($table_name, $foreign->table_name) && 0 ===
+                                                                              strcasecmp($column_name, $foreign->column_name);
+            });
         }
         return $this->foreign_constraints["{$table_name}.{$name}"] ?? null;
     }
@@ -99,9 +121,10 @@ class DatabaseSchema extends BaseDBClass
         if (!trim($search_name)) {
             return null;
         }
-        return \Arr::first($this->tables, function(DBTable $t) use ($search_name, $column_name){
-            return $t->primary_column && in_array($t->name, [\Str::singular($search_name), \Str::plural($search_name)]) &&
-                !(\Arr::first($t->foreign_keys, function(DBForeignConstraint $fk) use ($column_name){ return in_array($column_name, [$fk->column_name, $fk->referenced_column_name]); }));
+        return \Arr::first($this->tables, function (DBTable $t) use ($search_name, $column_name) {
+            return $t->primary_column &&
+                   in_array($t->name, [\Str::singular($search_name), \Str::plural($search_name)]) &&
+                   !(\Arr::first($t->foreign_keys, function (DBForeignConstraint $fk) use ($column_name) { return in_array($column_name, [$fk->column_name, $fk->referenced_column_name]); }));
         }) ?: null;
     }
 
@@ -114,10 +137,12 @@ class DatabaseSchema extends BaseDBClass
     public function getColumn($table_name, $name = null)
     {
         if (is_null($name) || empty($name) || !is_string($name)) {
-            return array_filter($this->columns, function($key) use ($table_name){ return 0 === stripos($key, "{$table_name}."); }, ARRAY_FILTER_USE_KEY);
+            return array_filter($this->columns, function ($key) use ($table_name) {
+                return 0 === stripos($key, "{$table_name}.");
+            },                  ARRAY_FILTER_USE_KEY);
         }
         if (is_array($name)) {
-            return array_filter($this->columns, function($key) use ($table_name, $name){ return in_array($key, array_map(function($n) use ($table_name){ return "{$table_name}.{$n}"; }, $name)); }, ARRAY_FILTER_USE_KEY);
+            return array_filter($this->columns, function ($key) use ($table_name, $name) { return in_array($key, array_map(function ($n) use ($table_name) { return "{$table_name}.{$n}"; }, $name)); }, ARRAY_FILTER_USE_KEY);
         }
         return $this->columns["{$table_name}.{$name}"] ?? null;
     }
@@ -154,7 +179,8 @@ class DatabaseSchema extends BaseDBClass
 
     public function setExcludedTables(string ...$tables)
     {
-        $this->excluded_tables = array_unique(array_filter(array_merge($this->excluded_tables, func_get_args()), 'is_string'));
+        $this->excluded_tables =
+            array_unique(array_filter(array_merge($this->excluded_tables, func_get_args()), 'is_string'));
         return $this;
     }
 

@@ -32,7 +32,7 @@ class PhpDocProperty
     {
         $me               = new self();
         $me->name         = $column->name;
-        $me->description  = $column->comment;
+        $me->description  = $column->comment->content;
         $me->data_types[] = $column->data_type->phpName();
         if ($column->is_nullable) {
             $me->data_types[] = 'null';

@@ -70,7 +70,7 @@ class Model
     protected function preProcessTemplate()
     {
         if (!empty($this->traits)) {
-            $this->uses = 'use '.implode(',', array_map('basename', $this->traits())).';';
+            $this->uses = 'use ' . implode(',', array_map('basename', $this->traits())) . ';';
         }
     }
 
@@ -97,8 +97,7 @@ class Model
         return (new self($table))->runTable();
     }
 
-    public static function fromTable(DBTable $table, bool $for_base = null)
-    : Model
+    public static function fromTable(DBTable $table, bool $for_base = null): Model
     {
         $me             = new self($table);
         $me->base_model = $for_base;
@@ -115,16 +114,11 @@ class Model
             $this->namespace = Config::abstracts_namespace();
             $this->name      = Util::baseClassName($this->table->name);
             $this->child     = Util::className($this->table->name);
-            if (Config::db_directories()) {
-                $this->parent = basename(Config::schema_model_name());
-                $this->addImport(Config::schema_model_fqdn());
-            } else {
-                $this->parent = basename(Config::super_model_name());
-                $this->addImport(Config::super_model_fqdn());
-            }
-        } elseif (false === $this->base_model) {
-            $this->addImport($pns = Config::abstracts_namespace().'\\'.Util::baseClassName($this->table->name));
-            $this->parent = basename($pns);
+        }
+        $this->addImport($pns = Config::extended_fqdn($this->table->name, $this->base_model));
+        if ($pns) {
+            $parts        = preg_split('/\s+/', basename($pns));
+            $this->parent = end($parts);
         }
         if (false !== $this->base_model) {
             $this->addTrait(...\Arr::wrap(Config::table_traits()[$this->table->name] ?? []));
@@ -171,6 +165,7 @@ class Model
             $this->_constants[] = $cre;
             $this->_constants[] = $upd;
         }
+        $this->_properties[] = ModelProperty::forHidden($this->table);
         $this->_properties[] = ModelProperty::forDates($this->table);
         $this->_properties[] = ModelProperty::forAttributes($this->table);
         $this->_properties[] = ModelProperty::forFillables($this->table);
@@ -240,7 +235,6 @@ class Model
     protected function morphManyFilters()
     {
         if (!count($this->table->morph_manys)) return;
-        // var_dump($this->table->name.' :: '.json_encode(array_keys($this->table->morph_manys)));
         foreach ($this->table->morph_manys as $name => $morph_table) {
             $this->morphOneFromMM($name, $morph_table);
             $this->morphToManyFromMM($name, $morph_table);
@@ -275,9 +269,12 @@ class Model
     {
         if ($morphTable->uniqueMorph($name)) return;
         /** @var DBColumn[] $columns */
-        $columns = array_filter($morphTable->columns, function(DBColumn $col) use ($name){ return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]); });
+        $columns = array_filter($morphTable->columns, function (DBColumn $col) use ($name) {
+            return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]);
+        });
         foreach ($columns as $column) {
-            if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) continue;
+            if (!($_table =
+                $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) continue;
             MorphToMany::fromTable($name, $column, $_table, $this);
         }
     }
@@ -286,9 +283,12 @@ class Model
     {
         if (!$morphTable->uniqueMorph($name)) return;
         /** @var DBColumn[] $columns */
-        $columns = array_filter($morphTable->columns, function(DBColumn $col) use ($name){ return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]); });
+        $columns = array_filter($morphTable->columns, function (DBColumn $col) use ($name) {
+            return !$col->is_primary && !in_array($col, ["{$name}_id", "{$name}_type"]);
+        });
         foreach ($columns as $column) {
-            if (!($_table = $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) continue;
+            if (!($_table =
+                $column->foreign_key ? $column->foreign_key->referenced_table : $column->probable_table)) continue;
             MorphToOne::fromTable($name, $column, $_table, $this);
         }
     }
@@ -373,15 +373,15 @@ class Model
     /**
      * @param RelationshipFunction|DBColumn $source
      */
-    public function setPhpDocProperty($source)
-    : ?PhpDocProperty
+    public function setPhpDocProperty($source): ?PhpDocProperty
     {
         if (!is_object($source) || !(is_a($source, RelationshipFunction::class) || is_a($source, DBColumn::class))) {
             return null;
         }
         if (is_a($source, RelationshipFunction::class)) {
             $pDoc = PhpDocProperty::fromRelationFunction($source);
-        } elseif (is_a($source, DBColumn::class)) $pDoc = PhpDocProperty::fromColumn($source);
+        }
+        elseif (is_a($source, DBColumn::class)) $pDoc = PhpDocProperty::fromColumn($source);
         else return null;
         return $this->_phpdoc_props[$source->name] = $pDoc;
     }

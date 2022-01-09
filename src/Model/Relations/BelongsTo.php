@@ -28,9 +28,10 @@ class BelongsTo extends RelationshipFunction
 
     public static function fromForeignKey(DBForeignConstraint $foreignKey, Model $model)
     {
-        if (!($name = self::relationName($foreignKey))) {
+        /*if (!($name = self::relationName($foreignKey,true))) {
             return null;
-        }
+        }*/
+        $name=function_name_single(preg_replace('/_'.Config::LARAVEL_ID.'$/','',$foreignKey->column_name));
         if (0 === strcasecmp(class_name($name), class_name($foreignKey->table->name))) {
             $name = $foreignKey->column->relation_name_singular;
         }

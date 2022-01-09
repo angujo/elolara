@@ -19,6 +19,43 @@ use Illuminate\Database\Eloquent\Model;
 
 return [
     /*
+     * Class to be used for each and every generated model
+     * Ensure it is or extends \Illuminate\Database\Eloquent\Model::class
+     */
+    'model_class' => Model::class,
+    /*
+     * Directory path to put the models
+     */
+    'base_dir' => app_path('Models'),
+    /*
+     * Namespace for the models
+     */
+    'namespace' => 'App\Models',
+    /*
+     * Enable composite keys in laravel
+     * Currently on testing
+     * Allows usage of Model::find($arr=[]) and multiple pri keys
+     * If you find yourself using this, reconsider your DB structure
+     */
+    'composite_keys' => true,
+    /*
+     * Name of class to be used in customizing Eloquent to accommodate package changes.
+     * E.g. models will be appended static class morphName() to allow access of relation name used.
+     */
+    'eloquent_extension_name' => 'Extension',
+    /*
+     * Create abstract classes to act as BASE abstract Class for the tables
+     * It is HIGHLY RECOMMENDED to enable this.
+     * Enables you to generate models based on changes without affecting your custom code
+     * on child models.
+     */
+    'base_abstract' => true,
+    /*
+     * Prefix for the abstract classes
+     * Default: Base
+     */
+    'base_abstract_prefix' => 'Base',
+    /*
      * Set the model connection defined
      */
     'define_connection' => false,
@@ -133,6 +170,12 @@ return [
      */
     'trait_model_tables' => ['users'],
     /*
+     * Instead of extending the [ElolaraModel] the highlighted table base classes will extend respective class
+     * Useful for classes such as [User] model where Illuminate\Foundation\Auth\User need to be extended instead of
+     * Illuminate\Database\Eloquent\Model
+     */
+    'custom_extends' => ['users' => \Illuminate\Foundation\Auth\User::class],
+    /*
      * While naming relations you need to select the order in which the names will be picked.
      * Ordering should start with most preferred.
      * Can only contain any of three entries; [column],[table],[constraint]
@@ -169,43 +212,6 @@ return [
      */
     'column_auto_relate' => true,
     /*
-     * Class to be used for each and every generated model
-     * Ensure it is or extends \Illuminate\Database\Eloquent\Model::class
-     */
-    'model_class' => Model::class,
-    /*
-     * Directory path to put the models
-     */
-    'base_dir' => app_path('Models'),
-    /*
-     * Namespace for the models
-     */
-    'namespace' => 'App\Models',
-    /*
-     * Enable composite keys in laravel
-     * Currently on testing
-     * Allows usage of Model::find($arr=[]) and multiple pri keys
-     * If you find yourself using this, reconsider your DB structure
-     */
-    'composite_keys' => true,
-    /*
-     * Name of class to be used in customizing Eloquent to accommodate package changes.
-     * E.g. models will be appended static class morphName() to allow access of relation name used.
-     */
-    'eloquent_extension_name' => 'Extension',
-    /*
-     * Create abstract classes to act as BASE abstract Class for the tables
-     * It is HIGHLY RECOMMENDED to enable this.
-     * Enables you to generate models based on changes without affecting your custom code
-     * on child models.
-     */
-    'base_abstract' => true,
-    /*
-     * Prefix for the abstract classes
-     * Default: Base
-     */
-    'base_abstract_prefix' => 'Base',
-    /*
      * If you wish to rename pivot tables in belongsToMany relation,
      * Set regex for naming pattern below. The name should be in teh table's comment
      * E.g if set as '{pivot:(\w+)}', a table with comment "This is a table comment for {pivot:role_users}" will rename pivot to role_users instead of default pivot
@@ -219,7 +225,7 @@ return [
      * start with "type:" followed by the type i.e. "type:tinyint(1)"=>'boolean'
      */
     'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean',
-        'type:date' => 'date:Y-m-d', 'type:datetime' => 'datetime:Y-m-d H:i:s'],
+                     'type:date' => 'date:Y-m-d', 'type:datetime' => 'datetime:Y-m-d H:i:s'],
     /*
      * Overwrite files during generation.
      * Will be overwritten by the -f(--force) option in artisan cli
@@ -231,6 +237,12 @@ return [
      * Fully import classes even on same namespace (FQDN)
      */
     'full_namespace_import' => false,
+    /*
+     * Indicate which columns to hide by default on specific tables
+     * Set the table name as key and columns as array values
+     * E.g. 'users'=>['password', 'remember_token',]
+     */
+    'hidden_columns' => ['users' => ['password', 'remember_token',]],
     /*
      * @see https://laravel.com/docs/eloquent-relationships#has-one-through
      * This is a complex relation and currently no direct way to implement.

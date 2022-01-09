@@ -20,29 +20,29 @@ use Angujo\Elolara\Util;
  *
  * @package Angujo\Elolara\Database
  *
- * @property string              $table_name
- * @property string              $name
- * @property string              $ordinal
- * @property string              $default
- * @property mixed               $default_value
- * @property string              $relation_name_singular
- * @property string              $relation_name_plural
- * @property boolean             $is_nullable
- * @property boolean             $is_primary
- * @property boolean             $is_multi_primary
- * @property boolean             $is_unique
- * @property boolean             $is_multi_unique
- * @property boolean             $is_generated
- * @property boolean             $is_auto_incrementing
- * @property string              $type
- * @property string              $character_length
- * @property string              $column_type
- * @property string              $column_key
- * @property string              $extra
- * @property string              $comment
- * @property DataType            $data_type
+ * @property string $table_name
+ * @property string $name
+ * @property string $ordinal
+ * @property string $default
+ * @property mixed $default_value
+ * @property string $relation_name_singular
+ * @property string $relation_name_plural
+ * @property boolean $is_nullable
+ * @property boolean $is_primary
+ * @property boolean $is_multi_primary
+ * @property boolean $is_unique
+ * @property boolean $is_multi_unique
+ * @property boolean $is_generated
+ * @property boolean $is_auto_incrementing
+ * @property string $type
+ * @property string $character_length
+ * @property string $column_type
+ * @property string $column_key
+ * @property string $extra
+ * @property Comment $comment
+ * @property DataType $data_type
  * @property DBForeignConstraint $foreign_key
- * @property DBTable|null        $probable_table Table likely to be related to the column but without foreign key
+ * @property DBTable|null $probable_table Table likely to be related to the column but without foreign key
  */
 class DBColumn extends BaseDBClass
 {
@@ -54,6 +54,7 @@ class DBColumn extends BaseDBClass
         $this->db = $schema;
         parent::__construct($values);
         $this->_setProp('data_type', DataType::fromColumn($this));
+        $this->_props['comment'] = Comment::init($this->_props['comment'] ?? null);
     }
 
     protected function default_value()
@@ -68,8 +69,10 @@ class DBColumn extends BaseDBClass
     {
         /** @var DBTable $table */
         return ($this->foreign_key || $this->is_primary || $this->is_auto_incrementing || $this->is_generated ||
-            !($table = $this->db->getRelatableTable(preg_replace(Config::column_relation_regex(), '$1', $this->name), $this->name)) ||
-            !$table->primary_column || 0 !== strcasecmp($this->data_type->phpName(), $table->primary_column->data_type->phpName())) ? null : $table;
+                !($table =
+                    $this->db->getRelatableTable(preg_replace(Config::column_relation_regex(), '$1', $this->name), $this->name)) ||
+                !$table->primary_column || 0 !==
+                                           strcasecmp($this->data_type->phpName(), $table->primary_column->data_type->phpName())) ? null : $table;
     }
 
     protected function relation_name_singular()
@@ -87,7 +90,7 @@ class DBColumn extends BaseDBClass
         if (false === stripos(Config::column_relation_pattern(), '{relation_name}')) {
             return $this->name;
         }
-        $regx = '/'.str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()).'/';
+        $regx = '/' . str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()) . '/';
         return preg_replace($regx, '$1', $this->name);
     }
 
@@ -123,7 +126,8 @@ class DBColumn extends BaseDBClass
 
     protected function is_generated()
     {
-        return false !== stripos($this->extra, 'DEFAULT_GENERATED') || false !== stripos($this->extra, 'auto_increment');
+        return false !== stripos($this->extra, 'DEFAULT_GENERATED') ||
+               false !== stripos($this->extra, 'auto_increment');
     }
 
     protected function is_auto_incrementing()

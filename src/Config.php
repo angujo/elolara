@@ -35,6 +35,8 @@ use phpDocumentor\Reflection\Types\Boolean;
  * @method static boolean overwrite_models(Boolean $value = null)
  * @method static boolean db_directories(Boolean $value = null)
  * @method static boolean model_trait(Boolean $value = null)
+ * @method static string[]|array hidden_columns($value = null)
+ * @method static string[]|array custom_extends($value = null)
  * @method static string[]|array soft_delete_columns($value = null)
  * @method static string[]|array create_columns($value = null)
  * @method static string[]|array update_columns($value = null)
@@ -76,6 +78,7 @@ class Config
     public const LARAVEL_TS_UPDATED  = 'updated_at';
     public const LARAVEL_TS_DELETED  = 'deleted_at';
     public const LARAVEL_PRIMARY_KEY = 'id';
+    public const LIBRARY_KEYWORD     = 'elolara';
 
     public static $laravel_primitives = ['array', 'boolean', 'collection', 'date', 'datetime', 'decimal:(\d+)', 'double', 'encrypted', 'encrypted:array', 'encrypted:collection', 'encrypted:object', 'float', 'integer', 'object', 'real', 'string', 'timestamp',];
     /** @var array|string[] */
@@ -87,7 +90,8 @@ class Config
     {
         $this->values                = array_replace($this->defaults(), $this->user());
         $this->values['schema_name'] = null;
-        $this->values['base_dir']    = preg_replace(['/\\$/', '/\/$/'], '', $this->values['base_dir'] ?? app_path('Models')).DIRECTORY_SEPARATOR;
+        $this->values['base_dir']    =
+            preg_replace(['/\\$/', '/\/$/'], '', $this->values['base_dir'] ?? app_path('Models')) . DIRECTORY_SEPARATOR;
         $this->setCoreTraits();
         $this->cleanCasts();
         $this->values['overwrite_models'] = false;
@@ -101,7 +105,7 @@ class Config
 
     public static function column_relation_regex()
     {
-        return '/'.str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()).'/';
+        return '/' . str_ireplace('{relation_name}', '(\w+)', Config::column_relation_pattern()) . '/';
     }
 
     public static function timestampColumnNames()
@@ -124,14 +128,16 @@ class Config
      *
      * @return Config
      */
-    public static function schemaConfig(string $schema_name)
-    : Config
+    public static function schemaConfig(string $schema_name): Config
     {
-        $schema                            = (self::$me ?? (self::$me = new self()))->values['schemas'][$schema_name] ?? [];
+        $schema                            =
+            (self::$me ?? (self::$me = new self()))->values['schemas'][$schema_name] ?? [];
         self::$me->values['table_configs'] = $schema['tables'] ?? [];
         self::$me->values['schema_name']   = $schema_name;
         self::$me->values['schema_traits'] = array_filter(\Arr::wrap($schema['traits'] ?? []));
-        self::$me->values['table_traits']  = array_map(function($tbl){ return \Arr::wrap($tbl['traits'] ?? []); }, array_filter(\Arr::wrap($schema['tables'] ?? [])));
+        self::$me->values['table_traits']  = array_map(function ($tbl) {
+            return \Arr::wrap($tbl['traits'] ?? []);
+        }, array_filter(\Arr::wrap($schema['tables'] ?? [])));
         unset(self::$me->values['schemas']);
         self::$me->values = array_replace(self::$me->values, $schema);
         self::$me->cleanCasts();
@@ -145,12 +151,13 @@ class Config
 
     protected static function db_dir_extension($sfx = null)
     {
-        return !self::db_directories() || (self::db_directories() && !self::schema_name()) ? '' : ucfirst(\Str::camel(self::schema_name())).$sfx;
+        return !self::db_directories() ||
+               (self::db_directories() && !self::schema_name()) ? '' : ucfirst(\Str::camel(self::schema_name())) . $sfx;
     }
 
     public static function models_dir()
     {
-        return self::base_dir().self::db_dir_extension(DIRECTORY_SEPARATOR);
+        return self::base_dir() . self::db_dir_extension(DIRECTORY_SEPARATOR);
     }
 
     public static function abstracts_prefix()
@@ -169,47 +176,58 @@ class Config
 
     public static function super_model_name()
     {
-        return Util::className(LM_APP_NAME.'_model');
+        return Util::className(LM_APP_NAME . '_model');
     }
 
     public static function super_morph_name()
     {
-        return Util::className(LM_APP_NAME.'_morph_map');
+        return Util::className(LM_APP_NAME . '_morph_map');
     }
 
     public static function schema_model_name()
     {
-        return Util::className(Config::schema_name().'_model');
+        return Util::className(Config::schema_name() . '_model');
     }
 
     public static function extensions_dir()
     {
-        return self::base_dir().self::extension_ns().DIRECTORY_SEPARATOR;
+        return self::base_dir() . self::extension_ns() . DIRECTORY_SEPARATOR;
     }
 
     public static function extension_namespace()
     {
-        return self::namespace().'\\'.self::extension_ns();
+        return self::namespace() . '\\' . self::extension_ns();
     }
 
     public static function super_model_fqdn()
     {
-        return self::namespace().'\\'.self::extension_ns().'\\'.self::super_model_name();
+        return self::namespace() . '\\' . self::extension_ns() . '\\' . self::super_model_name();
     }
 
     public static function schema_model_fqdn()
     {
-        return self::namespace().'\\'.self::extension_ns().'\\'.self::schema_model_name();
+        return self::namespace() . '\\' . self::extension_ns() . '\\' . self::schema_model_name();
+    }
+
+    public static function extended_fqdn(string $table_name, bool $is_base = null)
+    {
+        if (!is_bool($is_base)) return null;
+        if (is_array($exd = self::custom_extends()) && array_key_exists($table_name, $exd)) {
+            $bn = basename($exd[$table_name]);
+            return $exd[$table_name] . ' as ExtBase' . $bn;
+        }
+        if (true === $is_base) return self::db_directories() ? self::schema_model_fqdn() : self::super_model_fqdn();
+        return self::abstracts_namespace() . '\\' . Util::baseClassName($table_name);
     }
 
     public static function abstracts_namespace()
     {
-        return self::schema_namespace('\\').'\\'.self::abstracts_prefix();
+        return self::schema_namespace('\\') . '\\' . self::abstracts_prefix();
     }
 
     public static function schema_namespace($sfx = null)
     {
-        return self::namespace().(($sns = self::db_dir_extension($sfx)) ? "\\{$sns}" : '');
+        return self::namespace() . (($sns = self::db_dir_extension($sfx)) ? "\\{$sns}" : '');
     }
 
     public static function models_namespace()
@@ -219,7 +237,7 @@ class Config
 
     public static function abstracts_dir()
     {
-        return self::models_dir().self::abstracts_prefix().DIRECTORY_SEPARATOR;
+        return self::models_dir() . self::abstracts_prefix() . DIRECTORY_SEPARATOR;
     }
 
     private function getProperty($method)
@@ -239,7 +257,7 @@ class Config
      */
     private function defaults()
     {
-        $configs = include(__DIR__.DIRECTORY_SEPARATOR.'Laravel'.DIRECTORY_SEPARATOR.'config.php');
+        $configs = include(__DIR__ . DIRECTORY_SEPARATOR . 'Laravel' . DIRECTORY_SEPARATOR . 'config.php');
         unset($configs['has_one_through'], $configs['has_many_through'], $configs['pivot_tables']);
         return $configs;
     }
@@ -259,8 +277,7 @@ class Config
         unset($this->values['traits']);
     }
 
-    protected function cleanCasts()
-    : Config
+    protected function cleanCasts(): Config
     {
         $conversion = ['bool' => 'boolean'];
         $c          = $this->values['type_casts'] ?? null;
@@ -277,17 +294,20 @@ class Config
             }
             if (in_array($validation, $regex)) {
                 $n_casts[$col] = $validation;
-            } elseif (class_exists($validation)) {
+            }
+            elseif (class_exists($validation)) {
                 $implements = [Castable::class, CastsAttributes::class];
                 if (empty(array_intersect($implements, class_implements($validation)))) {
                     continue;
                 }
-                $n_casts[$col] = [$validation, basename($validation).'::class'];
-            } elseif (array_key_exists($validation, $conversion)) {
+                $n_casts[$col] = [$validation, basename($validation) . '::class'];
+            }
+            elseif (array_key_exists($validation, $conversion)) {
                 $n_casts[$col] = $conversion[$validation];
-            } else {
+            }
+            else {
                 foreach ($regex as $_regex) {
-                    if (preg_match('/^'.$_regex.'$/', $validation)) {
+                    if (preg_match('/^' . $_regex . '$/', $validation)) {
                         $n_casts[$col] = $validation;
                         break;
                     }
@@ -303,7 +323,7 @@ class Config
         if (!self::$vsave_name) {
             $fake = Factory::create();
             $fake->seed(12345);
-            $w = 'vsave_'.$fake->word;
+            $w = 'vsave_' . $fake->word;
         }
         return self::$vsave_name ?: (self::$vsave_name = \Str::camel($w));
     }
