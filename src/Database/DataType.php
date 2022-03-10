@@ -35,6 +35,13 @@ class DataType
 {
     use ImportsClass;
 
+    const PHP_DT_BOOL      = 'boolean';
+    const PHP_DT_FLOAT     = 'float';
+    const PHP_DT_INTEGER   = 'integer';
+    const PHP_DT_TIMESTAMP = 'timestamp';
+    const PHP_DT_STRING    = 'string';
+    const PHP_DT_ARRAY     = 'array';
+
     /**
      * Name
      *
@@ -84,33 +91,34 @@ class DataType
         }
         switch ($this->groupName()) {
             case 'bool':
-                return 'boolean';
+                return self::PHP_DT_BOOL;
             case 'double':
             case 'decimal':
             case 'float':
-                return 'float';
+                return self::PHP_DT_FLOAT;
             case 'tinyint':
             case 'int':
             case 'smallint':
             case 'bigint':
-                return 'integer';
+                return self::PHP_DT_INTEGER;
             case 'date':
             case 'timestamp':
                 if ($check) {
-                    return 'timestamp';
+                    return self::PHP_DT_TIMESTAMP;
                 }
                 $this->addImport(Carbon::class);
                 return basename(Carbon::class);
             case 'time':
             case 'char':
             case 'varchar':
-                return 'string';
+                return self::PHP_DT_STRING;
             case 'json':
-                return 'array';
+                return self::PHP_DT_ARRAY;
             default:
                 return 'mixed';
         }
     }
+
 
     protected function groupName(string $_type = null)
     {
